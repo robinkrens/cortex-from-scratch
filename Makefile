@@ -13,7 +13,7 @@ as:
 all:
 	$(AS) $(CFLAGS) -o start.o start.asm
 	$(LD) -T link.ld -o start.out start.o
-	$(MKIMG) -Obinary start.out kernel.bin
+	$(MKIMG) -Obinary -R .data start.out kernel.bin
 
 run:
 	qemu-system-arm	-monitor stdio -M lm3s6965evb -kernel kernel.bin

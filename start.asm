@@ -9,23 +9,11 @@ _start:
 
 /* Start of main program */
 start:
-	movs r0, #5
-	movs r1, #1
-loop:
-	adds r1, r0
-	subs r0, #1
-	bne loop
-	/* Result is now in R1 */
-	ldr r0, =Result
-	str r1, [r0] 
-
-deadloop:
-	b deadloop
+	b main
+	b start
 
 	.data
-	.word 0 /* add two words*/
-	.word 0 
 Result:
-	.word 0 /* results now is in 0x20000008 (0x20000000 + 2 w) */
+	.word 'X' /* results now is in 0x20000008 (0x20000000 + 2 w) */
 	.end
 

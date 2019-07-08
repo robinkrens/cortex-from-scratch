@@ -1,4 +1,4 @@
-CC=$(TOOLROOT)/arm-none-eabi-gcc
+CC=arm-none-eabi-gcc
 LD=arm-none-eabi-ld
 AR=$(TOOLROOT)/arm-none-eabi-ar
 AS=arm-none-eabi-as
@@ -12,7 +12,8 @@ as:
 
 all:
 	$(AS) $(CFLAGS) -o start.o start.asm
-	$(LD) -T link.ld -o start.out start.o
+	$(CC) $(CFLAGS) -c -o main.o main.c
+	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o
 	$(MKIMG) -Obinary -R .data start.out kernel.bin
 
 run:

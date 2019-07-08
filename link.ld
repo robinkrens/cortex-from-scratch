@@ -4,7 +4,7 @@ MEMORY
 	SRAM (xrw) : ORIGIN = 0x20000000, LENGTH = 64K
 }
 
-ENTRY(_start)
+ENTRY(_start) 
 
 SECTIONS
 {

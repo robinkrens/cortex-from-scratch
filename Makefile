@@ -5,19 +5,20 @@ AS=arm-none-eabi-as
 MKIMG=arm-none-eabi-objcopy
 
 LDFLAGS+= -mthumb -mcpu=cortex-m3 
-CFLAGS+= -mcpu=cortex-m3 -mthumb 
+CFLAGS+= -mcpu=cortex-m3 -mthumb -g 
 
 as: 
 	$(AS) $(CFLAGS) -o start.o start.asm
 
 all:
 	$(AS) $(CFLAGS) -o start.o start.asm
-	$(CC) $(CFLAGS) -c -o main.o main.c
-	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o
+	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o main.o main.c
+	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o uart.o uart.c
+	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o uart.o
 	$(MKIMG) -Obinary -R .data start.out kernel.bin
 
 run:
-	qemu-system-arm	-monitor stdio -M lm3s6965evb -kernel kernel.bin
+	qemu-system-arm	-serial stdio -M lm3s6965evb -kernel kernel.bin
 
 examine:
 	arm-none-eabi-objdump -S start.out

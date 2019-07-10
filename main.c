@@ -36,31 +36,17 @@ int strlen(const char *str)
     return retval;
 }
 
-unsigned char inportb (uint32_t _addr) 
-{
-    unsigned char rv;
-    //__asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (_port));
-    return rv;
 
-}
 
-void outportb (uint32_t _addr, unsigned char _data)
-{
-
-  // __asm__ __volatile__ ("str %1, %0"  : "=r" (_data)  : "m" (_addr) );
-
-   // __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
-}
 
 void main()
 {
-	uart_init();
-	uart_puts("LOADING SYSTEM...\n");
+	//uart_init();
+	//uart_puts("LOADING SYSTEM...\n");
 
 	ivt_init();
-
-    	//extern void stub();
-	//stub();
+	systick_init();
+//	asm("cpsie i"); // enable irq , cpsied f (disable faukts(
 
 	// loop
 	for(;;) {

@@ -4,15 +4,23 @@
  * a STM32F013RC6. Addresses of peripherals vary amongst 
  * manufacturers of boards with similar chips
  * 
- * Peace！
  * */
 
-/* VECTOR TABLE */
-#define NVIC_VECTTBL ((volatile unsigned long *)( 0xE000ED08))
-#define NVIC_EN0 ((volatile unsigned long *)( 0xE000E100))
-#define NVIC_EN1 ((volatile unsigned long *)( 0xE000E104))
+/* RANDOM DEBUG LOCATION */
+#define RANDOM_ADDR ((volatile uint32_t *)(0x21000000))
 
-/* SYSTEM CONTROL REGISTERS */
+/* SYSTEM CONTROL BLOCK REGISTER */
+#define SCB_VTOR ((volatile uint32_t *)( 0xE000ED08)) // VECTOR TABLE
+
+/* NESTED VECTOR INTERRUPT CONTROL REGISTER */
+#define NVIC_ISER0 ((volatile uint32_t*)( 0xE000E100)) // interrupt set enable register
+
+/* SYSTICK REGISTER */
+#define STK_CTRL ((volatile uint32_t *)(0xE000E010))
+#define STK_RELOAD ((volatile uint32_t *)(0xE000E014))
+
+
+/* SYSTEM CONTROL REGISTER */
 #define SYSCTRL_RCC ((volatile unsigned long *)(0x400FE060))
 #define SYSCTRL_RIS ((volatile unsigned long *)(0x400FE050))
 #define SYSCTRL_RCGC1 ((volatile unsigned long *)(0x400FE104))

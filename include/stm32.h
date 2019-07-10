@@ -14,4 +14,7 @@ extern void uart_init();
 extern void uart_putc(unsigned char);
 extern void uart_puts(unsigned char *);
 
+/* IVT.C */
+extern void ivt_init();
+
 #endif

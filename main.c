@@ -56,6 +56,12 @@ void main()
 {
 	uart_init();
 	uart_puts("LOADING SYSTEM...\n");
+
+	ivt_init();
+
+    	//extern void stub();
+	//stub();
+
 	// loop
 	for(;;) {
 

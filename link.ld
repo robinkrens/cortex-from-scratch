@@ -1,21 +1,28 @@
-MEMORY
+/* 
+ * MEMORY MAP
 {
 	FLASH (xr) : ORIGIN = 0x00000000, LENGTH = 512K
 	SRAM (xrw) : ORIGIN = 0x20000000, LENGTH = 64K
-}
+} */
 
 ENTRY(_start) 
 
 SECTIONS
 {
+	. = 0x0;
 	.text : ALIGN(4)
 	{
 		/* (.vector_table */ 
 		*(.text)
 
-	} > FLASH
-	.data : 
+	} 
+	. = 0x20000000;
+	.data :  
 	{
 		*(.data)
-	} > SRAM
+	}
+	.bss : ALIGN(256)
+	{
+		*(.bss)
+	}
 }

@@ -7,7 +7,8 @@
 
 void * systick_handler() {
 
-	*RANDOM_ADDR = (volatile uint32_t) 0x10101010 ;
+//	*RANDOM_ADDR = (volatile uint32_t) 0x10101010 ;
+//	uart_puts("TEST");
 }
 
 void systick_init() {

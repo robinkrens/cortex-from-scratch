@@ -6,10 +6,25 @@
 
 void uart_init() {
 
-/* To use the UARTs, the peripheral clock must be enabled by setting the UART0, UART1, or UART2
-bits in the RCGC1 register. (section 12.4: Initialization and Configuration */
+	// enable clock to UART1
+	*RCC_APB2ENR = 0x4005;
+	*GPIOA_CRH = 0x444444D4;
+	*AFIO_EVCR = 0x89;
+	
+	*USART1_CR1 = (0 << 13); // disable control register
+	*USART1_CR3 = 0xC0;
 
-*SYSCTRL_RCGC1 = *SYSCTRL_RCGC1 | 0x0003;
+	/* baud rate 9600 
+	 * 115200 = 8MHz / (16 * USARTDIV)
+	 * USARTDIV = 4.34
+	 * FRACTION: 16 x 0.34 = 0d5.44 0d5 -> 0x5
+	 * MANTISSA: 0d4.34 0d4 -> 0x4 
+	 * USART_BRR = 0x45*/
+
+	*USART1_BRR = 0x00000045;
+
+	/* parity = 8 bit, UART1 enabled, TX and RX enabled, interrupts enabled */
+	*USART1_CR1 = (volatile uint32_t) 0x000030AC; 
 
 /* 
  * Configure UART0:
@@ -22,7 +37,7 @@ bits in the RCGC1 register. (section 12.4: Initialization and Configuration */
 
 /* TODO: bitrate: How fast is CPU running?*/
 
-*UART0_CTRL = 0;
+/* *UART0_CTRL = 0;
 *UART0_IBRD = 27; 
 *UART0_FBRD = 9;
 *UART0_LCRH = 0x60; 
@@ -33,19 +48,19 @@ bits in the RCGC1 register. (section 12.4: Initialization and Configuration */
 *UART1_FBRD = 9;
 *UART1_LCRH = 0x60; 
 *UART1_CTRL = 0x301;
-
+*/
 
 }
 
 extern void uart_putc(unsigned char ch) {
 	
-	if (ch == '\n') {
-		while ((*UART0_FLAG & 0x8)); // busy bit
-		*UART0_DATA = 0x0D; // return line
-	}
-	
-	while ((*UART0_FLAG & 0x8)); // busy bit
-	*UART0_DATA = ch;
+//	if (ch == '\n') {
+//		while ((*UART1_DR & 0x8)); // busy bit
+//		*USART1_DR = 0x0D; // return line
+//	}
+//	
+//	while ((*UART0_FLAG & 0x8)); // busy bit
+	*USART1_DR = ch;
 }
 
 extern void uart_puts(unsigned char *str)

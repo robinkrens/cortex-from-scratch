@@ -41,11 +41,12 @@ int strlen(const char *str)
 
 void main()
 {
-	//uart_init();
 	//uart_puts("LOADING SYSTEM...\n");
 
 	ivt_init();
+	uart_init();
 	systick_init();
+	uart_puts("WOGSYS LOADING...");
 //	asm("cpsie i"); // enable irq , cpsied f (disable faukts(
 
 	// loop

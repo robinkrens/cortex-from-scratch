@@ -6,8 +6,13 @@
  * 
  * */
 
-/* RANDOM DEBUG LOCATION */
-#define RANDOM_ADDR ((volatile uint32_t *)(0x21000000))
+
+#define BSS_BASE ((volatile uint32_t)(0x20000000));
+#define MEM_SIZE 512000;
+
+/* SYSTEM INFO AND DEBUG */
+#define MCU_ID ((volatile uint32_t*)( 0xE0042000)) 
+#define FLASH_MEM ((volatile uint32_t*)( 0x1FFFF000)) 
 
 /* SYSTEM CONTROL BLOCK REGISTER */
 #define SCB_VTOR ((volatile uint32_t *)( 0xE000ED08)) // VECTOR TABLE
@@ -19,6 +24,9 @@
 #define STK_CTRL ((volatile uint32_t *)(0xE000E010))
 #define STK_RELOAD ((volatile uint32_t *)(0xE000E014))
 
+/* CLOCK REGISTER */
+#define RCC_CR ((volatile uint32_t *)(0x40021000))
+#define RCC_CFGR ((volatile uint32_t *)(RCC_CR + 0x04))
 
 /* SYSTEM CONTROL REGISTER */
 #define SYSCTRL_RCC ((volatile unsigned long *)(0x40021000))
@@ -32,8 +40,11 @@
 #define GPIOA_CRH ((volatile unsigned long *)(0x40010804))
 #define AFIO_EVCR ((volatile unsigned long *)(0x40010000))
 
-#define USART1_SR ((volatile unsigned long *)(0x40013800))
-#define USART1_DR ((volatile unsigned long *)(0x40013804))
-#define USART1_BRR ((volatile unsigned long *)(0x40013808))
-#define USART1_CR1 ((volatile unsigned long *)(0x4001380C))
-#define USART1_CR3 ((volatile unsigned long *)(0x40013814))
+/* UART1 REGISTERS */
+#define USART1_BASE ((volatile uint32_t) (0x40013800))
+#define USART1_SR ((volatile uint32_t *) (USART1_BASE))
+#define USART1_DR ((volatile uint32_t *)  (USART1_BASE + 0x04))
+#define USART1_BRR ((volatile uint32_t *) (USART1_BASE + 0x08))
+#define USART1_CR1 ((volatile uint32_t *) (USART1_BASE + 0x0C))
+#define USART1_CR2 ((volatile uint32_t *) (USART1_BASE + 0x10))
+#define USART1_CR3 ((volatile uint32_t *) (USART1_BASE + 0x14))

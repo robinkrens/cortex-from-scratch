@@ -7,6 +7,9 @@ extern void *memset(void*, unsigned char, size_t);
 extern unsigned short *memsetw(unsigned short *dest, unsigned short val, size_t count);
 extern int strlen(const char *);
 
+/* CLOCK.C */
+extern void clock_init();
+
 /* UART.C */
 extern void uart_init();
 extern void uart_putc(unsigned char);
@@ -18,5 +21,11 @@ extern void ivt_set_gate(unsigned char, void *(), short);
 
 /* SYSTICK.C */
 extern void systick_init();
+
+/* SYSINFO.C */
+extern void sysinfo();
+
+/* LIB.C */
+extern void addrtohex(const uint32_t);
 
 #endif

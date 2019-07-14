@@ -16,7 +16,10 @@ all:
 	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o uart.o uart.c
 	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o ivt.o ivt.c 
 	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o systick.o systick.c 
-	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o uart.o ivt.o systick.o
+	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o sysinfo.o sysinfo.c 
+	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o lib.o lib.c 
+	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o mm.o mm.c 
+	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o uart.o ivt.o systick.o sysinfo.o lib.o mm.o
 	$(MKIMG) -Obinary -R .data start.out kernel.bin
 
 run:

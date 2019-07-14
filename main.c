@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stm32.h> // <-- your own header file located located in ./include
+#include <mmap.h>
 
 
 void *memcpy(void *dest, void *src, size_t count)
@@ -41,12 +42,16 @@ int strlen(const char *str)
 
 void main()
 {
-	//uart_puts("LOADING SYSTEM...\n");
 
 	ivt_init();
+//	clock_init();
 	uart_init();
 	systick_init();
-	uart_puts("WOGSYS LOADING...");
+	uart_puts("LOADING SYSTEM 0.1 ...\n");
+	sysinfo();
+	addrtohex((volatile uint32_t) 0x12345678 );
+	addrtohex((volatile uint32_t) *SCB_VTOR );
+
 //	asm("cpsie i"); // enable irq , cpsied f (disable faukts(
 
 	// loop

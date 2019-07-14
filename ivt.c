@@ -26,6 +26,8 @@ void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 /* Dummy interrupt */
 void * dummy_isr() {
 
+	uart_puts("EXCEPTION X: SYSTEM HALTED\n");
+	for(;;);
 }
 
 /* Initialize interrupt vector  */
@@ -41,6 +43,9 @@ void ivt_init() {
 	ivt_set_gate(1, dummy_isr, 0);
 	ivt_set_gate(2, dummy_isr, 0);
 	ivt_set_gate(3, dummy_isr, 0);
+	ivt_set_gate(4, dummy_isr, 0);
+	ivt_set_gate(5, dummy_isr, 0);
+	ivt_set_gate(6, dummy_isr, 0);
 
 	/* the vector table starts at 0x0. Since the address 0x0 point to 
 	 * bootcode, it is on ROM or FLASH. The vector table can be

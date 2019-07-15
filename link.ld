@@ -1,9 +1,9 @@
-/* 
- * MEMORY MAP
+/* */
+MEMORY
 {
 	FLASH (xr) : ORIGIN = 0x08000000, LENGTH = 512K
 	SRAM (xrw) : ORIGIN = 0x20000000, LENGTH = 64K
-} */
+} 
 
 ENTRY(_start) 
 
@@ -20,9 +20,9 @@ SECTIONS
 	.data :  
 	{
 		*(.data)
-	}
+	} 
 	.bss : ALIGN(256)
 	{
 		*(.bss)
-	}
+	} 
 }

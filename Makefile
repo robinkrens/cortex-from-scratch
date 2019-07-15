@@ -4,7 +4,7 @@ AR=$(TOOLROOT)/arm-none-eabi-ar
 AS=arm-none-eabi-as
 MKIMG=arm-none-eabi-objcopy
 
-LDFLAGS+= -mthumb -mcpu=cortex-m3 
+LDFLAGS+= -mthumb -mcpu=cortex-m0 
 CFLAGS+= -mcpu=cortex-m3 -mthumb -g 
 
 as: 

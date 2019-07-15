@@ -43,6 +43,9 @@ void uart_init() {
 */
 }
 
+void wait() {
+	for (int i = 0; i < 100; i++);
+}
 
 extern void uart_putc(unsigned char ch) {
 	
@@ -50,15 +53,16 @@ extern void uart_putc(unsigned char ch) {
 		while (*USART1_SR & 0x0C) { } // transmit data register empty and complete
 		*USART1_DR = 0x0D; // return line
 	}
-	
-	while ((*USART1_SR & 0xFF) == 0x0C) {} // busy bit  
+
+
+	while (*USART1_SR & 0x0C) {} 
 		*USART1_DR = ch;
 
+
+	
+	wait();
 }
 
-void wait() {
-	for (int i = 0; i < 100; i++);
-}
 extern void uart_puts(unsigned char *str)
 {
 
@@ -66,7 +70,6 @@ extern void uart_puts(unsigned char *str)
 
     for (i = 0; i < strlen(str); i++)
     {
-	wait();
         uart_putc(str[i]);
     }
 }

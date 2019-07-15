@@ -7,8 +7,8 @@
  * */
 
 
-#define BSS_BASE ((volatile uint32_t)(0x20000000));
-#define MEM_SIZE 512000;
+#define BSS_BASE ((volatile uint32_t *)(0x20000800)) //TODO: .data flexible siz
+#define TOTAL_MEM_SIZE 64000;
 
 /* SYSTEM INFO AND DEBUG */
 #define MCU_ID ((volatile uint32_t*)( 0xE0042000)) 

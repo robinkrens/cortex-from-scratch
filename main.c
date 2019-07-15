@@ -49,8 +49,19 @@ void main()
 	systick_init();
 	uart_puts("LOADING SYSTEM 0.1 ...\n");
 	sysinfo();
-	addrtohex((volatile uint32_t) 0x12345678 );
-	addrtohex((volatile uint32_t) *SCB_VTOR );
+	mm_init();
+
+	int * p2 = mm_alloc(200);
+	*p2 = 0x12345678;
+
+	test_memory(p2);
+
+	addrtohex(p2);
+	addrtohex(*p2);
+
+
+	//addrtohex((volatile uint32_t) 0x12345678 );
+	//addrtohex((volatile uint32_t) SCB_VTOR );
 
 //	asm("cpsie i"); // enable irq , cpsied f (disable faukts(
 

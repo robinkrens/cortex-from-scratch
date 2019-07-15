@@ -1,4 +1,4 @@
-	.equ STACK_TOP, 0x20000800
+	.equ STACK_TOP, 0x20008000 /* placed at 32kB, TODO: could place at top of SRAM? */
 	.text
 	.global _start
 	.global reset, nmi, hardfault
@@ -34,7 +34,7 @@ stub:
 	mov R1,#0
 	udiv.w R2, R0, R1 */
 
-	.data
-	.word 'x'
+/*	.data
+	.word 'x' */
 	.end
 

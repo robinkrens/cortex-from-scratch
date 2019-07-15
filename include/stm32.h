@@ -28,4 +28,10 @@ extern void sysinfo();
 /* LIB.C */
 extern void addrtohex(const uint32_t);
 
+/* MM.C */
+extern void mm_init();
+extern void * mm_alloc(size_t);
+extern void free(void *);
+extern void test_memory(uint32_t *);
+
 #endif

@@ -21,6 +21,7 @@ void sysinfo() {
 
 	tmp = (tmp >> 16);
 	uart_puts("# REVISION: ");
+//	addrtohex(tmp);
 	switch	(tmp) {
 		case 0x1000:
 		      uart_puts("REVISION A\n");

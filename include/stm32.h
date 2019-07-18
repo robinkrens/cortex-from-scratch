@@ -34,4 +34,8 @@ extern void * mm_alloc(size_t);
 extern void free(void *);
 extern void test_memory(uint32_t *);
 
+/* REGF.C */ 
+extern void regw_u8(volatile uint32_t *, uint8_t, short, short);
+extern void regw_u32(volatile uint32_t *, uint32_t, short, short);
+
 #endif

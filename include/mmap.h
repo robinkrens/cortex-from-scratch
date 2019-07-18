@@ -6,12 +6,11 @@
  * 
  * */
 
-
 #define BSS_BASE ((volatile uint32_t *)(0x20000800)) //TODO: .data flexible siz
 #define TOTAL_MEM_SIZE 64000;
 
 /* SYSTEM INFO AND DEBUG */
-#define MCU_ID ((volatile uint32_t*)( 0xE0042000)) 
+#define MCU_ID ((volatile uint32_t*)( 0xE000ED00)) 
 #define FLASH_MEM ((volatile uint32_t*)( 0x1FFFF000)) 
 
 /* SYSTEM CONTROL BLOCK REGISTER */
@@ -19,6 +18,7 @@
 
 /* NESTED VECTOR INTERRUPT CONTROL REGISTER */
 #define NVIC_ISER0 ((volatile uint32_t*)( 0xE000E100)) // interrupt set enable register
+#define NVIC_ISER1 ((volatile uint32_t*)( 0xE000E104)) // interrupt set enable register
 
 /* SYSTICK REGISTER */
 #define STK_CTRL ((volatile uint32_t *)(0xE000E010))
@@ -30,7 +30,7 @@
 
 /* SYSTEM CONTROL REGISTER */
 #define SYSCTRL_RCC ((volatile unsigned long *)(0x40021000))
-#define RCC_APB2ENR ((volatile unsigned long *)(0x40021018)) // register to enable USART1
+#define RCC_APB2ENR ((volatile uint32_t *)(0x40021018)) // register to enable USART1
 
 #define SYSCTRL_RIS ((volatile unsigned long *)(0x400FE050))
 #define SYSCTRL_RCGC1 ((volatile unsigned long *)(0x400FE104))
@@ -38,7 +38,14 @@
 #define GPIOPA_AFSEL ((volatile unsigned long *)(0x40004420))
 
 #define GPIOA_CRH ((volatile unsigned long *)(0x40010804))
-#define AFIO_EVCR ((volatile unsigned long *)(0x40010000))
+
+#define AFIO_EVCR ((volatile uint32_t *)(0x40010000))
+//#define AFIO_EXTICR1 ((volatile uint32_t *)(AFIO_EVCR + 0x08))
+
+/* EXTERNAL INTERRUPTS */
+#define EXTI_IMR ((volatile uint32_t *)(0x40010400))
+#define EXTI_RTSR ((volatile uint32_t *)  (EXTI_IMR + 0x08))
+//#define EXTI_FTSR ((volatile uint32_t *)  (EXTI_IMR + 0x04))
 
 /* UART1 REGISTERS */
 #define USART1_BASE ((volatile uint32_t) (0x40013800))

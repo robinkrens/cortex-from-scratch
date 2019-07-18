@@ -7,7 +7,7 @@
 /* Temporary libc functions, which can later be 
  * replaced by a *real* library */
 
-char hexbuf[8] = {'0', '0','0', '0','0', '0','0', '0'};
+char hexbuf[8];
 
 void addrtohex(uint32_t addr) {
 	char tmpbuf[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
@@ -32,4 +32,6 @@ void addrtohex(uint32_t addr) {
 	//uart_puts(hexbuf);
 	uart_putc('\n');
 }
+
+
 

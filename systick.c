@@ -4,12 +4,33 @@
 #include <stm32.h>
 #include <mmap.h>
 
+struct interrupt_frame {
 
-void * systick_handler() {
+        uint32_t r0; // N-32
+        uint32_t r1;
+        uint32_t r2;
+        uint32_t r3;
+        uint32_t r12;
+        uint32_t lr;
+        uint32_t pc;
+        uint32_t psr; // N-4
+};
+
+
+/* void * systick_handler() {
 
 //	*RANDOM_ADDR = (volatile uint32_t) 0x10101010 ;
 //	uart_puts("TEST");
+} */
+
+__attribute__ ((interrupt))
+void * systick_handler(struct interrupt_frame * frame) {
+
+	uart_puts("TICKING\n");
+//	addrtohex((uint32_t) 0x12345678);
+	//      for(;;);
 }
+
 
 void systick_init() {
 

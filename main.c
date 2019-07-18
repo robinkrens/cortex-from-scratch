@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stm32.h> // <-- your own header file located located in ./include
+#include <stm32.h> // <-- my own header file located located in ./include
 #include <mmap.h>
 
 
@@ -46,19 +46,23 @@ void main()
 	ivt_init();
 //	clock_init();
 	uart_init();
-	systick_init();
+//	systick_init();
 	uart_puts("LOADING SYSTEM 0.1 ...\n");
 	sysinfo();
 	mm_init();
 
-	int * p2 = mm_alloc(200);
-	*p2 = 0x12345678;
+	//int * p2 = mm_alloc(512);
+	//memset(p2, 'a', 512);
 
-	test_memory(p2);
+	//addrtohex(p2);
+	//addrtohex(*p2);
 
-	addrtohex(p2);
-	addrtohex(*p2);
+	//uint32_t * p = (volatile unsigned)  0x21000000;
+	//regw_u32(p, 0x0CCCCCCCC, 4, 0x01);
 
+	//regw_u8(p, 0xFF, 0, 0x02);
+	
+	//addrtohex(*p);
 
 	//addrtohex((volatile uint32_t) 0x12345678 );
 	//addrtohex((volatile uint32_t) SCB_VTOR );

@@ -19,7 +19,8 @@ all:
 	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o sysinfo.o sysinfo.c 
 	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o lib.o lib.c 
 	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o mm.o mm.c 
-	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o uart.o ivt.o systick.o sysinfo.o lib.o mm.o
+	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o regf.o regf.c 
+	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o uart.o ivt.o systick.o sysinfo.o lib.o mm.o regf.o
 	$(MKIMG) -Obinary -R .data start.out kernel.bin
 
 run:

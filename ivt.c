@@ -32,36 +32,47 @@ struct interrupt_frame {
  * service routine:  
  *
  * interrupt vector 1-15: processor exceptions
- * interrupt vector 16-64: irq0 - irq ..
+ * interrupt vector 16-92: irq0 - irq ..
  * */
 
-uint32_t ivt[64];
+uint32_t ivt[92];
 
 /* each message corresponds to each and every exception. 
  * We get the correct message by accessing
  *  exception_message[interrupt_number] 
  *  exception_message[0] is not used (=MSP)*/
-unsigned char *exception_messages[] =
-{
-    "--",
-    "RESET",
-    "NMI",
-    "HARD FAULT",
-    "MEMMANAGE FAULT",
-    "BUS FAULT",
-    "USAGE FAULT",
-    "RESERVED",
-    "SVC",
-    "DEBUG MONITOR",
-    "RESERVED",
-    "PENDSV",
-    "SYSTICK",
-    "IRQ1",
-    "IRQ2",
-    "IRQ3",
-    "IRQ4",
-    // add more if needed
-};
+
+char * exception_message(uint8_t intnr) {
+
+	char * messages[] = {
+	    "--",
+	    "RESET",
+	    "NMI",
+	    "HARD FAULT",
+	    "MEMMANAGE FAULT",
+	    "BUS FAULT",
+	    "USAGE FAULT",
+	    "RESERVED",
+	    "SVC",
+	    "DEBUG MONITOR",
+	    "RESERVED",
+	    "RESERVED",
+	    "RESERVED",
+	    "RESERVED",
+	    "PENDSV",
+	    "SYSTICK",
+	    "IRQ1",
+	    "IRQ2",
+	    "IRQ3",
+	    "IRQ4",
+	    // add more if needed
+	};
+
+	if (intnr < 20) // TODO: strlen
+		return messages[intnr];
+
+	return NULL;
+}
 
 void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 
@@ -75,21 +86,11 @@ void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 __attribute__ ((interrupt)) 
 void * dummy_isr(struct interrupt_frame * frame) {
 
-
-	uint32_t * p = (volatile uint32_t *) 0x21000000;
-
-	addrtohex(frame->r0);
-	addrtohex(frame->r1);
-	addrtohex(frame->r2);
-	addrtohex(frame->r3);
-	addrtohex(frame->r12);
-	addrtohex(frame->lr);
-	addrtohex(frame->pc);
-	addrtohex(frame->psr);
+	uint8_t nr = *SCB_VTOR_ST & 0xFF;
 	
-	//__asm__ __volatile__ ("MRS r0, IPSR");
-	//addrtohex(frame->r0);
-	uart_puts("EXCEPTION X: SYSTEM HALTED\n");
+	uart_puts("EXCEPTION: ");
+	uart_puts(exception_message(nr));
+	uart_puts("\nSYSTEM HALTED\n");
 	
 	for(;;);
 }
@@ -98,13 +99,13 @@ void * dummy_isr(struct interrupt_frame * frame) {
 void ivt_init() {
 
 	/* clear entiry IVT, in SRAM location for SRAM + .data (in .bss section) */
-	memset(&ivt, 0, (sizeof(uint32_t) * 87));
+	memset(&ivt, 0, (sizeof(uint32_t) * 92));
 
 	// stack top is loaded from the first entry table on boot/reset
 	// don't need to relocate or init this here
 	extern void * reset,  * nmi, * hardfault;
 
-	for (int i = 1; i < 7; i++) {
+	for (int i = 1; i <= 6 ; i++) {
 		ivt_set_gate(i, dummy_isr, 0);
 	}
 

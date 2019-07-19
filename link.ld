@@ -14,9 +14,9 @@ SECTIONS
 	{
 		/* (.vector_table */ 
 		*(.text)
-
-	} 
-	. = 0x20000000;
+		*(.rodata)
+	}
+        . = 0x20000000;	
 	.data :  
 	{
 		*(.data)
@@ -24,5 +24,6 @@ SECTIONS
 	.bss : ALIGN(256)
 	{
 		*(.bss)
-	} 
+	}
+       	_endofbss = .;	
 }

@@ -16,19 +16,11 @@ struct interrupt_frame {
         uint32_t psr; // N-4
 };
 
-
-/* void * systick_handler() {
-
-//	*RANDOM_ADDR = (volatile uint32_t) 0x10101010 ;
-//	uart_puts("TEST");
-} */
-
 __attribute__ ((interrupt))
 void * systick_handler(struct interrupt_frame * frame) {
 
+	uint32_t volatile status;
 	uart_puts("TICKING\n");
-//	addrtohex((uint32_t) 0x12345678);
-	//      for(;;);
 }
 
 
@@ -41,7 +33,7 @@ void systick_init() {
 	/* The counter reload register here holds 
 	 * 0x1000 -- that's 4096 clock cycles -- if 
 	 * it is down to zero it is restores the value */
-	*STK_RELOAD = (volatile uint32_t) 0x00000400; 
+	*STK_RELOAD = (volatile uint32_t) 0x00400000; 
 
 	/* Every time the counter counts down to zero
 	 * a systick exception is asserted. Systick has

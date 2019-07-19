@@ -34,7 +34,7 @@ stub:
 	mov R1,#0
 	udiv.w R2, R0, R1 */
 
-/*	.data
-	.word 'x' */
+	.data
+	.word 'x' 
 	.end
 

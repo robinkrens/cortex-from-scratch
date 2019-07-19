@@ -12,13 +12,14 @@
 
 void * uart_handler() {
 
-	uart_puts("\n echo: ");
+	uart_puts("echo: ");
  	while (RXNE) {
 		char echochar = *USART1_DR;
-	//	regw_u8(USART1_DR, echochar, 0, O_WRITE);
-	uart_putc(echochar);
-	}  
-//for(;;);
+		//regw_u32(USART1_DR, echochar, 0, O_WRITE);
+		uart_putc(echochar);
+	}
+	uart_putc('\n');
+      		
 
 }
 void uart_init() {

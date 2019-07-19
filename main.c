@@ -46,8 +46,8 @@ void main()
 	ivt_init();
 //	clock_init();
 	uart_init();
-//	systick_init();
 	uart_puts("LOADING SYSTEM 0.1 ...\n");
+	systick_init();
 	sysinfo();
 	mm_init();
 
@@ -61,11 +61,6 @@ void main()
 	//regw_u32(p, 0x0CCCCCCCC, 4, 0x01);
 
 	//regw_u8(p, 0xFF, 0, 0x02);
-	
-	//addrtohex(*p);
-
-	//addrtohex((volatile uint32_t) 0x12345678 );
-	//addrtohex((volatile uint32_t) SCB_VTOR );
 
 //	asm("cpsie i"); // enable irq , cpsied f (disable faukts(
 

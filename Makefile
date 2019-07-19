@@ -1,15 +1,21 @@
+# Copyright 2019 - Robin Krens
+# Cross compilers links
 CC=arm-none-eabi-gcc
 LD=arm-none-eabi-ld
 AR=$(TOOLROOT)/arm-none-eabi-ar
 AS=arm-none-eabi-as
 MKIMG=arm-none-eabi-objcopy
 
-LDFLAGS+= -mthumb -mcpu=cortex-m0 
+# Compiler flags
+# TODO:Cortex-m3 or Cortex-m0?
+LDFLAGS+= -mthumb -mcpu=cortex-m3 
 CFLAGS+= -mcpu=cortex-m3 -mthumb -g 
 
+# Start up machine assembly
 as: 
 	$(AS) $(CFLAGS) -o start.o start.asm
 
+# Compile and link all
 all:
 	$(AS) $(CFLAGS) -o start.o start.asm
 	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o main.o main.c
@@ -23,11 +29,22 @@ all:
 	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o uart.o ivt.o systick.o sysinfo.o lib.o mm.o regf.o
 	$(MKIMG) -Obinary -R .data start.out kernel.bin
 
+# Run in Qemu; note this is a patched version for stm32-f103c8
 run:
 	/usr/local/bin/qemu-system-arm -serial stdio  -M stm32-f103c8 -kernel kernel.bin
 
-examine:
-	arm-none-eabi-objdump -S start.out
+# Examine all sections
+examine-all:
+	arm-none-eabi-objdump -D start.out | less
+
+# Examine just headers
+examine-header:
+	arm-none-eabi-objdump -x start.out | less
+
+# Flash kernel to board
+flash:
+	stm32flash -w kernel.bin -v /dev/ttyUSB0
+
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $< -o $@

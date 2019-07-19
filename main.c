@@ -46,18 +46,21 @@ void main()
 	ivt_init();
 //	clock_init();
 	uart_init();
-	uart_puts("LOADING SYSTEM 0.1 ...\n");
+	//uart_puts("LOADING SYSTEM 0.1 ...\n");
 	systick_init();
-	sysinfo();
 	mm_init();
+	sysinfo();
 
 	//int * p2 = mm_alloc(512);
 	//memset(p2, 'a', 512);
 
 	//addrtohex(p2);
 	//addrtohex(*p2);
-
-	//uint32_t * p = (volatile unsigned)  0x21000000;
+ 	
+	/* extern stub();
+	stub();
+	__asm__ __volatile__ ("udiv r1, r3 ,%0" :: "r"(0)); */
+	
 	//regw_u32(p, 0x0CCCCCCCC, 4, 0x01);
 
 	//regw_u8(p, 0xFF, 0, 0x02);

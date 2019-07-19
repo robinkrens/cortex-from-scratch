@@ -83,8 +83,8 @@ void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 
 
 /* Dummy interrupt */
-__attribute__ ((interrupt)) 
-void * dummy_isr(struct interrupt_frame * frame) {
+// __attribute__ ((interrupt)) 
+void * dummy_isr(/* struct interrupt_frame * frame */) {
 
 	uint8_t nr = *SCB_VTOR_ST & 0xFF;
 	

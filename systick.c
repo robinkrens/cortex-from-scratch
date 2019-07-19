@@ -16,11 +16,12 @@ struct interrupt_frame {
         uint32_t psr; // N-4
 };
 
-__attribute__ ((interrupt))
-void * systick_handler(struct interrupt_frame * frame) {
+//__attribute__ ((interrupt))
+void * systick_handler(/* struct interrupt_frame * frame */) {
 
-	uint32_t volatile status;
+//	uint32_t volatile status;
 	uart_puts("TICKING\n");
+//	for(;;);
 }
 
 

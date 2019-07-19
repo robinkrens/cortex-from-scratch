@@ -9,6 +9,7 @@
 
 char hexbuf[8];
 
+/* Still kind of a debug function */
 void addrtohex(uint32_t addr) {
 	char tmpbuf[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
 	memset(&hexbuf, 0, sizeof(uint32_t) * 8);
@@ -25,12 +26,12 @@ void addrtohex(uint32_t addr) {
 		}
 	}
 
-	uart_puts("ADDRESS: 0x");
+	//uart_puts("ADDRESS: 0x");
 	 for (int i = 7; i >= 0; i--) {
 		uart_putc(hexbuf[i]);
 	} 
 	//uart_puts(hexbuf);
-	uart_putc('\n');
+	//uart_putc('\n');
 }
 
 

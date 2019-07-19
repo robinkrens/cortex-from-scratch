@@ -10,6 +10,7 @@
  * SIMPLE BITMAP IMPLEMENTATION
  * */
 
+
 #define CHUNKS  128
 #define FREE 	0x00
 #define ALLOC	0x01

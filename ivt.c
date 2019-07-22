@@ -1,3 +1,13 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/20 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * 
+ * */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -105,9 +115,10 @@ void ivt_init() {
 	// don't need to relocate or init this here
 	extern void * reset,  * nmi, * hardfault;
 
-	for (int i = 1; i <= 6 ; i++) {
+	for (int i = 1; i <= 64 ; i++) {
 		ivt_set_gate(i, dummy_isr, 0);
 	}
+
 
 	/* the vector table starts at 0x0. Since the address 0x0 point to 
 	 * bootcode, it is on ROM or FLASH. The vector table can be

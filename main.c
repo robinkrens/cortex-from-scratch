@@ -48,11 +48,11 @@ void main()
 	uart_init();
 	//uart_puts("LOADING SYSTEM 0.1 ...\n");
 	systick_init();
-	mm_init();
+//	mm_init();
 	sysinfo();
 
-	//int * p2 = mm_alloc(512);
-	//memset(p2, 'a', 512);
+
+	pool_init(20, 5, 0x20000800);
 
 	//addrtohex(p2);
 	//addrtohex(*p2);

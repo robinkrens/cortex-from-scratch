@@ -1,33 +1,39 @@
 # Copyright 2019 - Robin Krens
+#
+# TODO: Somehow integrate this assembly start.asm (start.o)
+#
+
 # Cross compilers links
 CC=arm-none-eabi-gcc
 LD=arm-none-eabi-ld
-AR=$(TOOLROOT)/arm-none-eabi-ar
 AS=arm-none-eabi-as
 MKIMG=arm-none-eabi-objcopy
 
 # Compiler flags
 # TODO:Cortex-m3 or Cortex-m0?
 LDFLAGS+= -mthumb -mcpu=cortex-m3 
-CFLAGS+= -mcpu=cortex-m3 -mthumb -g 
+ASFLAGS+= -mcpu=cortex-m3 -mthumb -g
+CFLAGS+= -mcpu=cortex-m3 -mthumb -g -ffreestanding 
+
+ODIR = obj
+_OBJ = main.o uart.o ivt.o systick.o sysinfo.o lib.o regf.o pool.o
+OBJ = $(patsubst %, $(ODIR)/%,$(_OBJ))
+
+
+$(ODIR)/%.o: %.c $(DEPS)
+	@mkdir -p $(@D)
+	$(CC) -c $< $(CFLAGS) -I./include -o $@
 
 # Start up machine assembly
 as: 
-	$(AS) $(CFLAGS) -o start.o start.asm
+	$(AS) $(ASFLAGS) -o start.o start.asm
 
 # Compile and link all
-all:
-	$(AS) $(CFLAGS) -o start.o start.asm
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o main.o main.c
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o uart.o uart.c
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o ivt.o ivt.c 
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o systick.o systick.c 
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o sysinfo.o sysinfo.c 
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o lib.o lib.c 
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o mm.o mm.c 
-	$(CC) $(CFLAGS) -c -I./include -ffreestanding -o regf.o regf.c 
-	$(LD) -nostartfiles -T link.ld -o start.out start.o main.o uart.o ivt.o systick.o sysinfo.o lib.o mm.o regf.o
-	$(MKIMG) -Obinary -R .data start.out kernel.bin
+kernel: $(OBJ)
+	$(AS) $(ASFLAGS) -o start.o start.asm
+	$(LD) -nostartfiles -Map $@.MAP -T link.ld -o $@.ELF start.o $^ --print-memory-usage
+	@echo "Creating binary..."
+	$(MKIMG) -Obinary -R .data $@.ELF $@.bin
 
 # Run in Qemu; note this is a patched version for stm32-f103c8
 run:
@@ -35,23 +41,28 @@ run:
 
 # Examine all sections
 examine-all:
-	arm-none-eabi-objdump -D start.out | less
+	arm-none-eabi-objdump -D kernel.ELF | less
 
 # Examine just headers
 examine-header:
-	arm-none-eabi-objdump -x start.out | less
+	arm-none-eabi-objdump -x kernel.ELF | less
 
 # Flash kernel to board
 flash:
 	stm32flash -w kernel.bin -v /dev/ttyUSB0
 
+.PHONY: clean
 
-%.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
-	$(CC) -MM $(CFLAGS) $< > $*.d
+clean:
+	rm -rf $(ODIR)/*.o start.o kernel.*
 
-%.o: %.s
-	$(CC) -c $(CFLAGS) $< -o $@
+# Altijd handig deze template
+#%.o: %.c
+#	$(CC) -c $(CFLAGS) $< -o $@
+#	$(CC) -MM $(CFLAGS) $< > $*.d
+#
+#%.o: %.s
+#	$(CC) -c $(CFLAGS) $< -o $@
 
 
 

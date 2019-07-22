@@ -30,9 +30,14 @@ extern void addrtohex(const uint32_t);
 
 /* MM.C */
 extern void mm_init();
-extern void * mm_alloc(size_t);
+extern void * malloc(size_t);
 extern void free(void *);
 extern void test_memory(uint32_t *);
+
+/* POOL.c */
+extern void pool_init(size_t, unsigned int, uint32_t *);
+extern void * alloc();
+extern void free();
 
 /* REGF.C */ 
 extern void regw_u8(volatile uint32_t *, uint8_t, short, short);

@@ -1,59 +1,82 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/20 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * Simple bitmap on bitband memory implementation for kernel
+ * heap. Sensitive to fragmentation over time. Bitband 
+ * memory makes it possible to access each bit of memory
+ * atomically. 
+ * 
+ * DEPRECATED
+ *
+ * */
+
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stm32.h>
 #include <mmap.h>
 
-/* TOTAL SRAM MEMORY: 64kB 
- * 64 chunks of 1kB 
- * 128 chunks of 512 bytes
- * SIMPLE BITMAP IMPLEMENTATION
+
+#define CHUNKS 256
+
+#define MEM_VALUE(addr) *((volatile uint32_t *) (addr))
+#define MEM_ADDR(addr) ((uint32_t *) (addr))
+#define BITBAND(a, b) ((a & 0xF0000000) + 0x02000000 + ((a &0xFFFFF)<<5) + (b<<2))
+#define INDEXTOADDR(a) (((a & 0xFFFFF) >> 5) + ((a & 0xFF000000) - 0x02000000))
+
+
+/* Total SRAM: ~ 64kB 
+ * Divided into chunks (256 bytes)
+ * Each bit will index a chunk
+ * Bits needed: 0x100 (= 4 uint32_t)
  * */
 
-
-#define CHUNKS  128
-#define FREE 	0x00
-#define ALLOC	0x01
-
-#define BASE 0x20000400
-
-#define SET_SIZE(s) 	(s << 8)
-#define SET_FLAGS(f) 	(f << 24)
-#define IS_ALLOC(c)   	((c >> 24) & 0x0F )
-#define PADDR(i)	(0x20000400 + (i * 0x200))
-#define I_OFFSET(p)     ((p  - 0x20000400))
-
-uint32_t chunk[CHUNKS];
-
-/* 
- * | FLAGS | SIZE   | RESERVED	|
- * | 0x00  | 0x0000 | 0x00     	|
- *
- * */
-
+//uint32_t chunk_index[4];
 
 void mm_init() {
 
-	// interrupt vector
-	chunk[0] = SET_SIZE(96) | SET_FLAGS(ALLOC); 
 
-	// test
-	/* uart_puts("ALLOC:\n");
-	int * p = mm_alloc(100);
-	*p = 0x12345678;
+//	memset(&chunk_index, 0, sizeof(uint32_t) * 4);
 
-	addrtohex(p);
-	addrtohex(*p);
 
-	uart_puts("FREE:\n");
+//	uint32_t *p = MEM_ADDR(0x20000278);
+	
+//	extern stub();
+//	stub();
+	// __asm__ __volatile__ ("udiv r1, r3 ,%0" :: "r"(0)); 
+//
+//	for(;;);
+//	*p = (uint32_t volatile) 0x12345678;
+//	*x = (uint32_t volatile) 0x12345679;
+//	addrtohex(p);
+//	addrtohex(*p);
+//	MEM_ADDR(x) = 0x1;
+//
+	
 
-	int * p2 = mm_alloc(100);
-	*p2 = 0xFFFFAAAA;
-	addrtohex(p2);
-	addrtohex(*p2);
+//	char * new = malloc(10);
+//	addrtohex(new);
+//	char * new2 = malloc(10);
+//	addrtohex(new2);
 
-	free(p);
-	free(p2); */
+
+	//uint32_t * test = MEM_ADDR(0x20000000);
+	//uint32_t random_location = MEM_VALUE(0x20000000);
+
+	//uint32_t random_location = 0x20000900;
+
+	//MEM_VALUE(random_location);
+	//MEM_VALUE(BITBAND(random_location, 0)) = 0x1;
+
+	//addrtohex(MEM_VALUE(random_location));
+
+
+	
 }
 
  void test_memory(uint32_t * ptr) {
@@ -66,37 +89,43 @@ void mm_init() {
 
 } 
 
+/* BIT BAND SCAN */
 
-void * mm_alloc(size_t size) { // in bytes
+ /* uint32_t fits(uint32_t * current, size_t size) {
+ 
+ 	uint32_t addr_start = current;
+ 
+ 	for (int i = 1; i < size; i++) {
+ 		current + 4; // next bit offset is 0x4
+ 		if ((MEM_VALUE(current)) == 0x1) 
+ 			return 0x0;
+ 	}
+ 	return addr_start;
+ } */
 
-	if (size > 512) {
-		uart_puts("SYSERROR: WE CAN'T ALLOCATE THAT MUCH!\n");
-		return NULL; 
-	}
 
-	/* check which chunk is free */
-	for (int i = 1; i < CHUNKS; i++) {
-		if (!IS_ALLOC(chunk[i])) {
-			chunk[i] = SET_SIZE(size) | SET_FLAGS(ALLOC);
-		       	return (void *) PADDR(i);
+/* void * malloc(size_t size) {
+
+	if (size < 256) {
+
+		extern char * _endofbss;
+
+		uint32_t start = (uint32_t) &chunk_index[0];	
+		uint32_t current;
+		int offset = 0x100;
+
+		uint32_t * index = MEM_ADDR(BITBAND(start, 0));
+		for(int i = 0; i < CHUNKS; i++) {
+			if (*index == 0x0) {
+				addrtohex(*index);
+				*index = 0x1;
+				return INDEXTOADDR(((uint32_t)index)) + (i * offset);
+			}
+			index += 0x04;
 		}
+		return NULL;
 	}
-	
-	uart_puts("SYSERROR: OUT OF MEMORY\n");
-	return NULL;
-}
+} */
+ 
 
-void free(void *ptr) {
-
-	uint32_t index = (uint32_t) I_OFFSET(ptr) / 0x200;
-
-	uint32_t tmp = chunk[index];
-	if (!IS_ALLOC(tmp))
-		uart_puts("SYSERROR: ALREADY FREED!\n");
-
-	else if(index < CHUNKS) {
-		chunk[index] = SET_FLAGS(FREE) | SET_SIZE(0);
-	}
-		
-}
 

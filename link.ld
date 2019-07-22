@@ -21,7 +21,7 @@ SECTIONS
 	{
 		*(.data)
 	} 
-	.bss : ALIGN(256)
+	.bss : ALIGN(256) 
 	{
 		*(.bss)
 	}

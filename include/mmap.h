@@ -16,6 +16,7 @@
 /* SYSTEM CONTROL BLOCK REGISTER */
 #define SCB_VTOR ((volatile uint32_t *)( 0xE000ED08)) // VECTOR TABLE
 #define SCB_VTOR_ST ((volatile uint32_t *)( 0xE000ED04)) // STATUS OF VECTOR
+#define SCB_CCR ((volatile uint32_t *)( 0xE000ED14)) // SET SOFTWARE TRAPS
 
 /* NESTED VECTOR INTERRUPT CONTROL REGISTER */
 #define NVIC_ISER0 ((volatile uint32_t*)( 0xE000E100)) // interrupt set enable register

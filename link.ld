@@ -12,7 +12,7 @@ SECTIONS
 	. = 0x0;
 	.text : ALIGN(4)
 	{
-		/* (.vector_table */ 
+		/* (.vector_table */
 		*(.text)
 		*(.rodata)
 	}
@@ -21,7 +21,7 @@ SECTIONS
 	{
 		*(.data)
 	} 
-	.bss : ALIGN(256) 
+	.bss : ALIGN(4) 
 	{
 		*(.bss)
 	}

@@ -44,30 +44,14 @@ void main()
 {
 
 	ivt_init();
-//	clock_init();
 	uart_init();
-	//uart_puts("LOADING SYSTEM 0.1 ...\n");
+	
 	systick_init();
-//	mm_init();
+	
 	sysinfo();
 
+	terminal();
 
-	pool_init(20, 5, 0x20000800);
-
-	//addrtohex(p2);
-	//addrtohex(*p2);
- 	
-	/* extern stub();
-	stub();
-	__asm__ __volatile__ ("udiv r1, r3 ,%0" :: "r"(0)); */
-	
-	//regw_u32(p, 0x0CCCCCCCC, 4, 0x01);
-
-	//regw_u8(p, 0xFF, 0, 0x02);
-
-//	asm("cpsie i"); // enable irq , cpsied f (disable faukts(
-
-	// loop
 	for(;;) {
 
  	}

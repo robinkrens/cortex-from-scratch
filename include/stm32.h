@@ -14,6 +14,7 @@ extern void clock_init();
 extern void uart_init();
 extern void uart_putc(unsigned char);
 extern void uart_puts(unsigned char *);
+extern char uart_getc(); 
 
 /* IVT.C */
 extern void ivt_init();
@@ -42,5 +43,12 @@ extern void free();
 /* REGF.C */ 
 extern void regw_u8(volatile uint32_t *, uint8_t, short, short);
 extern void regw_u32(volatile uint32_t *, uint32_t, short, short);
+
+/* TERM.C */
+extern char getchar();
+extern void cputchar(char);
+extern void cputs(unsigned char *);
+extern char * readline();
+extern void terminal();
 
 #endif

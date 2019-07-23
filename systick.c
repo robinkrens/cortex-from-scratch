@@ -20,7 +20,7 @@ struct interrupt_frame {
 void * systick_handler(/* struct interrupt_frame * frame */) {
 
 //	uint32_t volatile status;
-	uart_puts("TICKING\n");
+	//uart_puts("TICKING\n");
 //	for(;;);
 }
 

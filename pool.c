@@ -5,24 +5,22 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- * Fixed-sized memory pool allocation. A so called
- * memory-pool (i.e. 4kB * 12 blocks) can be 
- * initialized. Note: this allocator is for use on
- * processors without an MMU (memory management 
- * unit). A MPU (memory protection unit), if 
- * available can be used to protect certain zones.
+ * Fixed-sized memory pool allocation. A so called * memory-pool
+ * (i.e. 4kB * 12 blocks) can be initialized. Note: this allocator
+ * is for use on processors without an MMU (memory management 
+ * unit). A MPU (memory protection unit), if available can be used
+ * to protect certain zones.
  *
- * This work is based on an article of Ben Kenwright
+ * This work is based on an article of Ben Kenwright.
  * 
- * Preconditions: programmer should make sure the 
- * SRAM entry point + (blocks * blocksize) is free. 
+ * Preconditions: programmer should make sure the SRAM entry point
+ * + (blocks * blocksize) is free. 
  *
  * $SAMPLE USAGE$
- * KERNEL: can use initialize a big pool for all
- * user tasks
+ * KERNEL: can initialize a big pool for all user tasks
  *
- * USER TASKS/PROCESS: can use this to dynamically
- * allocate their own memory (i.e. heap)
+ * USER TASKS/PROCESS: can use this to dynamically allocate their
+ * own memory (i.e. heap)
  * 
  * 
  * * */
@@ -76,6 +74,7 @@ void pool_init(size_t size_arg, unsigned int blocks_arg, uint32_t * entry_SRAM) 
 	 mem.SRAM_entry = NULL;
  } */
 
+/* Helper functions */
 uint32_t * AddrFromIndex(unsigned int i)  {
 	return mem.SRAM_entry + ( i * mem.block_size );
 
@@ -86,6 +85,7 @@ unsigned int IndexFromAddr(const uint32_t * p) {
 
 }
 
+/* alloc and free */ 
 void * alloc() {
  	if (mem.blocks_alloc < mem.blocks ) {
 		 unsigned int * p = (unsigned int *)AddrFromIndex( mem.blocks_alloc );

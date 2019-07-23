@@ -26,13 +26,12 @@ void addrtohex(uint32_t addr) {
 		}
 	}
 
-	//uart_puts("ADDRESS: 0x");
 	 for (int i = 7; i >= 0; i--) {
-		uart_putc(hexbuf[i]);
+		cputchar(hexbuf[i]);
 	} 
-	//uart_puts(hexbuf);
-	//uart_putc('\n');
 }
+
+
 
 
 

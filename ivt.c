@@ -45,7 +45,7 @@ struct interrupt_frame {
  * interrupt vector 16-92: irq0 - irq ..
  * */
 
-uint32_t ivt[92];
+uint32_t __attribute__((aligned(0x100))) ivt[92];
 
 /* each message corresponds to each and every exception. 
  * We get the correct message by accessing
@@ -126,6 +126,6 @@ void ivt_init() {
 	 * a register in the NVIC called the vector table offset register */
 
 	//*SCB_VTOR = (volatile uint32_t) &ivt; 
-	regw_u32(SCB_VTOR, (uint32_t) &ivt, 0, 0x01);
+	regw_u32(SCB_VTOR, (uint32_t) &ivt, 0, OWRITE);
 
 }

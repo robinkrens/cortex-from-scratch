@@ -15,12 +15,13 @@ LDFLAGS+= -mthumb -mcpu=cortex-m3
 ASFLAGS+= -mcpu=cortex-m3 -mthumb -g
 CFLAGS+= -mcpu=cortex-m3 -mthumb -g -ffreestanding 
 
+BIN = bin
+
 ODIR = obj
-_OBJ = main.o uart.o ivt.o systick.o sysinfo.o lib.o regf.o pool.o
+_OBJ = ivt.o uart.o systick.o sysinfo.o lib.o regf.o pool.o term.o main.o
 OBJ = $(patsubst %, $(ODIR)/%,$(_OBJ))
 
-
-$(ODIR)/%.o: %.c $(DEPS)
+$(ODIR)/%.o: %.c 
 	@mkdir -p $(@D)
 	$(CC) -c $< $(CFLAGS) -I./include -o $@
 
@@ -31,30 +32,31 @@ as:
 # Compile and link all
 kernel: $(OBJ)
 	$(AS) $(ASFLAGS) -o start.o start.asm
-	$(LD) -nostartfiles -Map $@.MAP -T link.ld -o $@.ELF start.o $^ --print-memory-usage
+	$(LD) -nostartfiles -Map $@.MAP -T link.ld -o $(BIN)/$@.ELF start.o $^ --print-memory-usage
 	@echo "Creating binary..."
-	$(MKIMG) -Obinary -R .data $@.ELF $@.bin
+	@mkdir -p $(BIN)
+	$(MKIMG) -Obinary -R .data $(BIN)/$@.ELF  $(BIN)/$@.bin
 
 # Run in Qemu; note this is a patched version for stm32-f103c8
 run:
-	/usr/local/bin/qemu-system-arm -serial stdio  -M stm32-f103c8 -kernel kernel.bin
+	/usr/local/bin/qemu-system-arm -serial stdio  -M stm32-f103c8 -kernel $(BIN)/kernel.bin
 
 # Examine all sections
 examine-all:
-	arm-none-eabi-objdump -D kernel.ELF | less
+	arm-none-eabi-objdump -D $(BIN)/kernel.ELF | less
 
 # Examine just headers
 examine-header:
-	arm-none-eabi-objdump -x kernel.ELF | less
+	arm-none-eabi-objdump -x $(BIN)/kernel.ELF | less
 
 # Flash kernel to board
 flash:
-	stm32flash -w kernel.bin -v /dev/ttyUSB0
+	stm32flash -w $(BIN)/kernel.bin -v /dev/ttyUSB0
 
 .PHONY: clean
 
 clean:
-	rm -rf $(ODIR)/*.o start.o kernel.*
+	rm -rf $(ODIR)/*.o start.o $(BIN)/kernel.*
 
 # Altijd handig deze template
 #%.o: %.c

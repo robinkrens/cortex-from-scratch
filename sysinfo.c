@@ -12,29 +12,29 @@ uint32_t get_msp(void);
 void sysinfo() {
 
 	uint32_t tmp = *MCU_ID;
-	uart_puts("# ROBSYS 0.1 LOADING...\n");
-	uart_puts("# DEVICE ID: ");
+	cputs("# ROBSYS 0.1 LOADING...\n");
+	cputs("# DEVICE ID: ");
 
 	if (tmp & 0x414) 
-		uart_puts("HIGH DENSITY\n");
+		cputs("HIGH DENSITY\n");
 	else {
-		uart_puts("UNKNOWN\n");
+		cputs("UNKNOWN\n");
 	}
 
 	tmp = (tmp >> 16);
 	uart_puts("# REVISION: ");
 	switch	(tmp) {
 		case 0x1000:
-		      uart_puts("REVISION A\n");
+		      cputs("REVISION A\n");
 		      break;
 		case 0x1001:
-		      uart_puts("REVISION Z\n");
+		      cputs("REVISION Z\n");
 		      break;
 		case 0x1003:
-		      uart_puts("REVISION 1/2/3/X/Y\n");
+		      cputs("REVISION 1/2/3/X/Y\n");
 		      break;
 		default:
-		      uart_puts("UNKNOWN\n");
+		      cputs("UNKNOWN\n");
 	}
 
 	extern char _endofbss;
@@ -44,15 +44,15 @@ void sysinfo() {
 	uint32_t data_bss = &_endofbss - MEM_OFFSET;
 	uint32_t mem_free = MEM_SIZE - stack_usage - data_bss;
 
-	uart_puts("# TOTAL MEMORY: ");
+	cputs("# TOTAL MEMORY: ");
 	addrtohex(MEM_SIZE);
-	uart_putc('\n');
-	uart_puts("# FREE MEMORY: ");
+	cputchar('\n');
+	cputs("# FREE MEMORY: ");
 	addrtohex(mem_free);
-	uart_putc('\n');
-	uart_puts("# STACK USAGE: ");
+	cputchar('\n');
+	cputs("# STACK USAGE: ");
 	addrtohex(stack_usage);
-	uart_putc('\n');
+	cputchar('\n');
 
 }
 

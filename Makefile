@@ -15,13 +15,31 @@ LDFLAGS+= -mthumb -mcpu=cortex-m3
 ASFLAGS+= -mcpu=cortex-m3 -mthumb -g
 CFLAGS+= -mcpu=cortex-m3 -mthumb -g -ffreestanding 
 
+INCLUDE+= -Iinclude 
+
 BIN = bin
 
 ODIR = obj
-_OBJ = ivt.o uart.o systick.o sysinfo.o lib.o regf.o pool.o term.o main.o
+_OBJ = ivt.o systick.o sysinfo.o term.o main.o 
 OBJ = $(patsubst %, $(ODIR)/%,$(_OBJ))
 
+DDIR = obj/drivers
+_DRIVERS = uart.o
+DRIVERS = $(patsubst %, $(DDIR)/%,$(_DRIVERS))
+
+LDIR = obj/lib
+_LIBS = string.o stdio.o regfunc.o pool.o  
+LIBS = $(patsubst %, $(LDIR)/%,$(_LIBS))
+
+$(DDIR)/%.o: drivers/%.c
+	@mkdir -p $(@D) 
+	$(CC) -c $< $(CFLAGS) $(INCLUDE) -o $@
+
 $(ODIR)/%.o: %.c 
+	@mkdir -p $(@D)
+	$(CC) -c $< $(CFLAGS) -I./include -o $@
+
+$(LDIR)/%.o: lib/%.c 
 	@mkdir -p $(@D)
 	$(CC) -c $< $(CFLAGS) -I./include -o $@
 
@@ -30,9 +48,9 @@ as:
 	$(AS) $(ASFLAGS) -o start.o start.asm
 
 # Compile and link all
-kernel: $(OBJ)
+kernel: $(OBJ) $(DRIVERS) $(LIBS) 
 	$(AS) $(ASFLAGS) -o start.o start.asm
-	$(LD) -nostartfiles -Map $@.MAP -T link.ld -o $(BIN)/$@.ELF start.o $^ --print-memory-usage
+	$(LD) -nostartfiles -Map $(BIN)/$@.MAP -T link.ld -o $(BIN)/$@.ELF start.o $^ --print-memory-usage
 	@echo "Creating binary..."
 	@mkdir -p $(BIN)
 	$(MKIMG) -Obinary -R .data $(BIN)/$@.ELF  $(BIN)/$@.bin
@@ -56,7 +74,7 @@ flash:
 .PHONY: clean
 
 clean:
-	rm -rf $(ODIR)/*.o start.o $(BIN)/kernel.*
+	rm -rf $(ODIR)/* start.o $(BIN)/kernel.*
 
 # Altijd handig deze template
 #%.o: %.c

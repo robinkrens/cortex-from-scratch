@@ -29,6 +29,7 @@ hardfault:
 stub:
 	ldr R0,=10
 	mov R1,#0
+	ldc2 11, cr0, [r1, #4]
 	udiv.w R2, R0, R1 
 
 	.data

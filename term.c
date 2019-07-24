@@ -1,40 +1,41 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stm32.h>
-#include <mmap.h>
+
+#include <sys/robsys.h>
+#include <sys/mmap.h>
+
+#include <lib/stdio.h>
 
 #define SERIAL 1
-#define BUFSIZE 256
+#define BUFSIZE 200
+
+
+int help(int, char**);
+
+/* 
+ * Built in commands
+ * 	info -- shows basic info of system
+ * 	reset -- software reset
+ * 	show [ADDRESS-ADDRESS] -- shows SRAM range
+ * 	switchmode -- switch to unprivileged mode
+ * */
 
 static char buf[BUFSIZE];
 
-/* Abstraction layer for I/O communication */
 
-char getchar(void) {
-        char c;
-	if (SERIAL) {
-	         while ((c = uart_getc()) == 0);
-                /* do nothing */
-	}
-        return c;
-}
+struct cmd {
+	char * name;
+	char * description;
+	int (*function)(int argc, char ** argsv);
+};
 
-void cputchar(char c) {
+static struct cmd builtin[] = 
+	{ "info", "show info", help};
 
-	if (SERIAL) {
-		uart_putc(c);
-	}
-
-}
-
-void cputs(unsigned char *str) {
-     
-     int i;
-     for (i = 0; i < strlen(str); i++)     {
-         cputchar(str[i]);
-    }
-
+int help(int argc, char ** argsv) {
+	sysinfo();
+	return 0;
 }
 
 void terminal() {
@@ -43,40 +44,9 @@ void terminal() {
         cputs("Terminal running!\n");
  
          while (1) {
-                 buf = readline("> ");
+                 buf = readline("root# ");
                  /* if (buf != NULL)
                          if (runcmd(buf, tf) < 0)
                                  break; */
          }
-}
-
-char * readline(char *prompt)
-{
-	int i, c, echoing;
-
-	if (prompt != NULL)
-		cputs(prompt); 
-
-	i = 0;
-	echoing = 1;
-	while (1) {
-		c = getchar();
-		if (c < 0) {
-			cputs("read error");
-			return NULL;
-		} else if ((c == '\b' || c == '\x7f') && i > 0) {
-			if (echoing)
-				cputchar('\b');
-			i--;
-		} else if (c >= ' ' && i < BUFSIZE-1) {
-			if (echoing)
-				cputchar(c);
-			buf[i++] = c;
-		} else if (c == '\n' || c == '\r') {
-			if (echoing)
-				cputchar('\n');
-			buf[i] = 0;
-			return buf;
-		}
-	}
 }

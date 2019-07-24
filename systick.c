@@ -1,8 +1,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stm32.h>
-#include <mmap.h>
+
+#include <sys/robsys.h>
+#include <sys/mmap.h>
+
+#include <lib/regfunc.h> // TODO
 
 struct interrupt_frame {
 

@@ -5,14 +5,31 @@
  * Initial version 
  * 
  * $DESCRIPTION$
+ * Set up of basic exceptions and interrupts. These interrupts
+ * don't do much, except for halting the system. 
+ * ivt_set_gate(interrupt nr, function, priority) can be used
+ * later to define more appropriate handling. See timer (timer.c) 
+ * or serial or (uart.c) handling for non-trivial examples.
+ *
+ * The actual code is not much, but there are a lot of details
+ * to consider. Besides that, in case more control is desired over
+ * entering and exiting interrupts (what is pushed on the stack) 
+ * A so-called naked function can be used. See below for more
+ * details.
  * 
+ *
  * */
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stm32.h>
-#include <mmap.h>
+
+#include <sys/robsys.h>
+#include <sys/mmap.h>
+
+#include <lib/stdio.h>
+#include <lib/string.h>
+#include <lib/regfunc.h>
 
 /* 
  * These values are pushed on the stack just before
@@ -22,7 +39,7 @@
  * gives me a little bit more control over the caller
  *
  * The following register are pushed to the stack
- * in reverse order
+ * in reverse order:
  *
  * */
 struct interrupt_frame {
@@ -43,6 +60,8 @@ struct interrupt_frame {
  *
  * interrupt vector 1-15: processor exceptions
  * interrupt vector 16-92: irq0 - irq ..
+ *
+ * Vector table needs to be aligned in memory.
  * */
 
 uint32_t __attribute__((aligned(0x100))) ivt[92];
@@ -92,15 +111,17 @@ void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 }
 
 
-/* Dummy interrupt */
+/* Dummy interrupt: comment out the comment to use a naked f
+ * function */
+
 // __attribute__ ((interrupt)) 
 void * dummy_isr(/* struct interrupt_frame * frame */) {
 
 	uint8_t nr = *SCB_VTOR_ST & 0xFF;
 	
-	uart_puts("EXCEPTION: ");
-	uart_puts(exception_message(nr));
-	uart_puts("\nSYSTEM HALTED\n");
+	cputs("EXCEPTION: ");
+	cputs(exception_message(nr));
+	cputs("\nSYSTEM HALTED\n");
 	
 	for(;;);
 }
@@ -108,7 +129,7 @@ void * dummy_isr(/* struct interrupt_frame * frame */) {
 /* Initialize interrupt vector  */
 void ivt_init() {
 
-	/* clear entiry IVT, in SRAM location for SRAM + .data (in .bss section) */
+	/* clear entire IVT, in SRAM location for SRAM + .data (in .bss section) */
 	memset(&ivt, 0, (sizeof(uint32_t) * 92));
 
 	// stack top is loaded from the first entry table on boot/reset
@@ -119,13 +140,10 @@ void ivt_init() {
 		ivt_set_gate(i, dummy_isr, 0);
 	}
 
-
-	/* the vector table starts at 0x0. Since the address 0x0 point to 
-	 * bootcode, it is on ROM or FLASH. The vector table can be
+	/* The vector table is intially at 0x0. The vector table can be
 	 * relocated to other memory locations. We can do this by setting 
 	 * a register in the NVIC called the vector table offset register */
 
-	//*SCB_VTOR = (volatile uint32_t) &ivt; 
 	regw_u32(SCB_VTOR, (uint32_t) &ivt, 0, OWRITE);
 
 }

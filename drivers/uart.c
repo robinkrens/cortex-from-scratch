@@ -1,16 +1,21 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stm32.h>
-#include <mmap.h>
-#include <drivers.h>
+
+#include <sys/mmap.h>
+#include <sys/robsys.h>
+
+#include <lib/regfunc.h>
+#include <lib/string.h>
+
+#include <drivers/uart.h>
 
 #define RXNE ((*USART1_SR >> 5) & 0x1)
 #define UARTBUF 256
 #define ECHO 1
 
 static struct {
-       	 uint8_t buf[UARTBUF] ;
+       	 uint8_t buf[UARTBUF];
          uint32_t rpos;
        	 uint32_t wpos;
 } linefeed;
@@ -21,7 +26,7 @@ void * uart_handler() {
 	//uart_puts("echo: ");
  	while (RXNE) {
 		char echochar = *USART1_DR;
-		//uart_putc(echochar);
+//		uart_putc(echochar);
                 linefeed.buf[linefeed.wpos++] = echochar;
                  if (linefeed.wpos == UARTBUF)
                          linefeed.wpos = 0;
@@ -33,6 +38,10 @@ void * uart_handler() {
 
 void uart_init() {
 
+	linefeed.rpos = 0; 
+	linefeed.wpos = 0;
+
+	//memset(&linefeed, 0, (sizeof(struct linefeed) ));
 	regw_u32(RCC_APB2ENR, 0x4005, 0, SETBIT);// enable clock to UART1, AFIO and GPIOA
 	
 	/* (after enable GPIOA), on PA9&PA10 and set mode

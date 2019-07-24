@@ -5,7 +5,7 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- * Example memory map for the Cortex-A3
+ * Memory map for the Cortex-A3
  * Implementations vary among manufacturers. This one is
  * a STM32F013RC6. Addresses of peripherals vary amongst 
  * manufacturers of boards with similar chips

@@ -28,9 +28,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stm32.h>
-#include <mmap.h>
 
+#include <lib/pool.h>
+#include <lib/string.h>
 
 struct MEMPOOL {
 
@@ -54,21 +54,7 @@ void pool_init(size_t size_arg, unsigned int blocks_arg, uint32_t * entry_SRAM) 
 	 memset(entry_SRAM, 0x00, (sizeof(char) * (size_arg * blocks_arg)));
 	 mem.free_blocks = blocks_arg;
 	 mem.m_next = mem.SRAM_entry;
-
-
-/*	 uint32_t * a =  alloc();
-	 uint32_t * b = alloc();
-	 uint32_t * c = alloc();
-	 free(c);
-	 uint32_t * d = alloc();
-
-	 addrtohex(a);
-	 addrtohex(b);
-	 addrtohex(c);
-	 addrtohex(d); */
-
  }
-
 
  /* void deletepool()  {
 	 mem.SRAM_entry = NULL;

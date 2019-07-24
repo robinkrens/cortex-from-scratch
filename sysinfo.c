@@ -1,8 +1,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stm32.h>
-#include <mmap.h>
+
+#include <sys/robsys.h>
+#include <sys/mmap.h>
+
+#include <lib/stdio.h>
+#include <lib/regfunc.h>
 
 #define MEM_SIZE	0x00010000 
 #define MEM_OFFSET	0x20000000
@@ -22,7 +26,7 @@ void sysinfo() {
 	}
 
 	tmp = (tmp >> 16);
-	uart_puts("# REVISION: ");
+	cputs("# REVISION: ");
 	switch	(tmp) {
 		case 0x1000:
 		      cputs("REVISION A\n");
@@ -45,13 +49,13 @@ void sysinfo() {
 	uint32_t mem_free = MEM_SIZE - stack_usage - data_bss;
 
 	cputs("# TOTAL MEMORY: ");
-	addrtohex(MEM_SIZE);
+	cputs(regtohex(MEM_SIZE));
 	cputchar('\n');
 	cputs("# FREE MEMORY: ");
-	addrtohex(mem_free);
+	cputs(regtohex(mem_free));
 	cputchar('\n');
 	cputs("# STACK USAGE: ");
-	addrtohex(stack_usage);
+	cputs(regtohex(stack_usage));
 	cputchar('\n');
 
 }

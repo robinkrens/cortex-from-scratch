@@ -47,7 +47,7 @@ void uart_init() {
 	/* (after enable GPIOA), on PA9&PA10 and set mode
 	 *  to alternative output */
 	regw_u32(GPIOA_CRH, 0x444444D4, 0, OWRITE);
-	regw_u8(AFIO_EVCR, 0x89, 0, OWRITE);// set event control register, output on PA, Pin 9
+	regw_u8(AFIO_EVCR, 0x89, 0, OWRITE);// set event control register, output on PA, Pin 9 TODO: check
 
 	//disable temporarily to set values
 	regw_u8(USART1_CR1, 0x0, 13, SETBIT);

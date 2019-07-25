@@ -22,6 +22,10 @@
 #define SETBIT	0x02
 #define CLRBIT	0x03
 
+/* 64kB SRAM located at SRAM_OFFSET */
+#define SRAM_SIZE	0x00010000 
+#define SRAM_OFFSET	0x20000000
+
 /* Safety macro's to get the address or value */
 #define MEM_VALUE(addr) *((volatile uint32_t(*) (addr))
 #define MEM_ADDR(addr) ((volatile uint32_t *) (addr))
@@ -49,6 +53,7 @@
 
 /* SYSTEM CONTROL REGISTER */
 #define SYSCTRL_RCC MEM_ADDR(0x40021000)
+#define RCC_APB1ENR MEM_ADDR(0x4002101C) // register to enable I2C
 #define RCC_APB2ENR MEM_ADDR(0x40021018) // register to enable USART1
 
 #define SYSCTRL_RIS MEM_ADDR(0x400FE050)
@@ -56,7 +61,10 @@
 #define SYSCTRL_RCGC2 MEM_ADDR(0x400FE108)
 #define GPIOPA_AFSEL MEM_ADDR(0x40004420)
 
-#define GPIOA_CRH MEM_ADDR(0x40010804)
+#define GPIOA_CRH MEM_ADDR(0x40010804) // for USART1
+#define GPIOB_CRL MEM_ADDR(0x40010C00) // low register (!) for I2C1
+#define GPIOC_CRL MEM_ADDR(0x40011000) // for led
+#define GPIOC_ODR MEM_ADDR(0x4001100C) //
 
 #define AFIO_EVCR MEM_ADDR(0x40010000)
 

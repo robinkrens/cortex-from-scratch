@@ -1,4 +1,13 @@
-	.equ STACK_TOP, 0x20010000 /* placed at 32kB, TODO: could place at top of SRAM? */
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/20 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ *
+ * */
+	.equ STACK_TOP, 0x20010000 /* placed at 64kB, top of SRAM */
 	.text
 	.global _start
 	.global reset, nmi, hardfault

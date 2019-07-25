@@ -1,3 +1,11 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/20 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -8,8 +16,6 @@
 #include <lib/stdio.h>
 #include <lib/regfunc.h>
 
-#define MEM_SIZE	0x00010000 
-#define MEM_OFFSET	0x20000000
 
 uint32_t get_msp(void);
 
@@ -44,12 +50,12 @@ void sysinfo() {
 	extern char _endofbss;
 	
 	uint32_t current_stack = get_msp();
-	uint32_t stack_usage = (MEM_OFFSET + MEM_SIZE) - current_stack;
-	uint32_t data_bss = &_endofbss - MEM_OFFSET;
-	uint32_t mem_free = MEM_SIZE - stack_usage - data_bss;
+	uint32_t stack_usage = (SRAM_OFFSET + SRAM_SIZE) - current_stack;
+	uint32_t data_bss = &_endofbss - SRAM_OFFSET;
+	uint32_t mem_free = SRAM_SIZE - stack_usage - data_bss;
 
 	cputs("# TOTAL MEMORY: ");
-	cputs(regtohex(MEM_SIZE));
+	cputs(regtohex(SRAM_SIZE));
 	cputchar('\n');
 	cputs("# FREE MEMORY: ");
 	cputs(regtohex(mem_free));

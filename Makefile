@@ -24,7 +24,7 @@ _OBJ = ivt.o systick.o sysinfo.o term.o main.o
 OBJ = $(patsubst %, $(ODIR)/%,$(_OBJ))
 
 DDIR = obj/drivers
-_DRIVERS = uart.o
+_DRIVERS = uart.o tm1637.o led.o
 DRIVERS = $(patsubst %, $(DDIR)/%,$(_DRIVERS))
 
 LDIR = obj/lib

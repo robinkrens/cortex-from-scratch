@@ -56,50 +56,42 @@ struct interrupt_frame {
 
 /* 
  * Vector table, each entry contains an interrupt
- * service routine:  
- *
+ * service routine: 
  * interrupt vector 1-15: processor exceptions
  * interrupt vector 16-92: irq0 - irq ..
- *
  * Vector table needs to be aligned in memory.
  * */
-
 uint32_t __attribute__((aligned(0x100))) ivt[92];
 
-/* each message corresponds to each and every exception. 
- * We get the correct message by accessing
- *  exception_message[interrupt_number] 
- *  exception_message[0] is not used (=MSP)*/
-
+/* Each message corresponds to each and every exception. */
 char * exception_message(uint8_t intnr) {
 
-	char * messages[] = {
-	    "--",
-	    "RESET",
-	    "NMI",
-	    "HARD FAULT",
-	    "MEMMANAGE FAULT",
-	    "BUS FAULT",
-	    "USAGE FAULT",
-	    "RESERVED",
-	    "SVC",
-	    "DEBUG MONITOR",
-	    "RESERVED",
-	    "RESERVED",
-	    "RESERVED",
-	    "RESERVED",
-	    "PENDSV",
-	    "SYSTICK",
-	    "IRQ1",
-	    "IRQ2",
-	    "IRQ3",
-	    "IRQ4",
-	    // add more if needed
-	};
+char * messages[] = {
+    "--",
+    "RESET",
+    "NMI",
+    "HARD FAULT",
+    "MEMMANAGE FAULT",
+    "BUS FAULT",
+    "USAGE FAULT",
+    "RESERVED",
+    "SVC",
+    "DEBUG MONITOR",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "PENDSV",
+    "SYSTICK",
+    "IRQ1",
+    "IRQ2",
+    "IRQ3",
+    "IRQ4",
+    // add more if needed
+};
 
-	if (intnr < 20) // TODO: strlen
-		return messages[intnr];
-
+if (intnr < 20) // TODO: strlen
+	return messages[intnr];
 	return NULL;
 }
 
@@ -107,11 +99,11 @@ void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 
 	ivt[num] = (uint32_t) isr;
 	*NVIC_ISER0 = (1 << ((uint32_t)(num) & 0x1F));
-	/* Priorities */
+	/* TODO: Priorities */
 }
 
 
-/* Dummy interrupt: comment out the comment to use a naked f
+/* Dummy interrupt: comment out the comment to use a naked
  * function */
 
 // __attribute__ ((interrupt)) 
@@ -129,13 +121,16 @@ void * dummy_isr(/* struct interrupt_frame * frame */) {
 /* Initialize interrupt vector  */
 void ivt_init() {
 
-	/* clear entire IVT, in SRAM location for SRAM + .data (in .bss section) */
+	/* clear entire IVT location in memory  */
 	memset(&ivt, 0, (sizeof(uint32_t) * 92));
 
-	// stack top is loaded from the first entry table on boot/reset
-	// don't need to relocate or init this here
+	/* The reset, NMI and hardfault handlers are originally
+	 * defined in the assembly start up and can be 
+	 * reused or overwritten. 
+	*  */
 	extern void * reset,  * nmi, * hardfault;
 
+	// set dummy handlers 
 	for (int i = 1; i <= 64 ; i++) {
 		ivt_set_gate(i, dummy_isr, 0);
 	}

@@ -22,7 +22,6 @@ uint32_t get_msp(void);
 void sysinfo() {
 
 	uint32_t tmp = *MCU_ID;
-	cputs("# ROBSYS 0.1 LOADING...\n");
 	cputs("# DEVICE ID: ");
 
 	if (tmp & 0x414) 

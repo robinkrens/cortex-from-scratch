@@ -75,7 +75,7 @@ static void wait() {
 	for (int i = 0; i < 100; i++);
 }
 
-extern void uart_putc(unsigned char ch) {
+void uart_putc(unsigned char ch) {
 	
   	if (ch == '\n') {
 		while (*USART1_SR & 0x0C) { } // transmit data register empty and complete
@@ -102,10 +102,10 @@ char uart_getc(void) {
 
 
 // move to library 
-extern void uart_puts(unsigned char *str) {
+/* extern void uart_puts(unsigned char *str) {
     int i;
     for (i = 0; i < strlen(str); i++)     {
         uart_putc(str[i]);
     }
-}
+} */
 

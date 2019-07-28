@@ -36,3 +36,26 @@ int strlen(const char *str)
     for(retval = 0; *str != '\0'; str++) retval++;
     return retval;
 }
+
+int strcmp(char * a, char * b) {
+
+	int alen = strlen(a);
+	int blen = strlen(b);
+
+	if (alen != blen)
+		return 0;
+
+	for (; alen != 0; alen--) {
+			if (*a++ != *b++)
+				return 0;
+	}
+	return 1;
+}
+
+char * strchr(const char *s, char c) {
+         for (; *s; s++)
+                 if (*s == c)
+                         return (char *) s;
+         return 0;
+}
+

@@ -40,8 +40,7 @@ void regw_u32(volatile uint32_t * reg, uint32_t val, short shift, short flag) {
 }
 
 /* Print out the hexidecimal representation of an integer
-   After implementation of a printf function, this code
-   will be obsolete.  */
+   After implementation of scanf or sth this will be obsolete.  */
 
 char hexbuf[8];
 char * regtohex(uint32_t addr) {
@@ -62,3 +61,28 @@ char * regtohex(uint32_t addr) {
 	}
 	return &hexbuf[0];	
 }
+int singlehextoreg(char  hex) {
+
+	int conv = 0;
+	if (hex >= 'A' && hex <= 'F') 
+		conv = hex - '7';
+
+	else {
+		conv = hex - '0';
+	}
+	return conv;
+
+}
+
+uint32_t hextoreg(char * a) {
+	
+	uint32_t x = 0;
+	int tmp;
+	for(int i = 0; i < 8; i++) {
+		tmp = singlehextoreg(*a++);
+	 	x += tmp << (28 - (i * 4));
+	}
+	return x;
+
+}
+

@@ -8,6 +8,34 @@
 
 #include <sys/mmap.h>
 
+
+// register set bit at position
+void rsetbit(volatile uint32_t * reg, short pos) {
+	*reg = *reg | (0x1 << pos);
+}
+
+// register set bits from certain pos
+void rsetbitsfrom(volatile uint32_t * reg, short pos, int val) {
+	*reg = *reg | (val << pos);
+}
+
+// register clear bit at position
+void rclrbit(volatile uint32_t * reg, short pos) {
+	*reg = *reg & ~(0x1 << pos);
+}
+
+int rchkbit(volatile uint32_t * reg, short pos) {
+	if ((*reg >> pos) & 0x1)
+		return 1;
+	return 0;
+}
+
+// register (over)write
+void rwrite(volatile uint32_t * reg, uint32_t val) {
+	*reg = val;
+}
+
+
 /* write value (uint8_t) to register */
 void regw_u8(volatile uint32_t * reg, uint8_t val, short shift, short flag) {
 
@@ -19,7 +47,7 @@ void regw_u8(volatile uint32_t * reg, uint8_t val, short shift, short flag) {
 			*reg = *reg | (val << shift);
 			break;
 		case CLRBIT:
-			*reg = (val << shift);
+			*reg = *reg & ~(val << shift);
 			break;
 	}
 }
@@ -35,6 +63,7 @@ void regw_u32(volatile uint32_t * reg, uint32_t val, short shift, short flag) {
 			*reg = *reg | (val << shift);
 			break;
 		case CLRBIT:
+			*reg = *reg & ~(val << shift);
 			break;
 	}
 }

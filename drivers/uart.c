@@ -20,6 +20,7 @@ static struct {
        	 uint32_t wpos;
 } linefeed;
 
+void set_baudrate();
 
 void * uart_handler() {
 
@@ -52,13 +53,8 @@ void uart_init() {
 	//disable temporarily to set values
 	regw_u8(USART1_CR1, 0x0, 13, SETBIT);
 
-	/* baud rate 115200,  8MHz / (16 * USARTDIV)
-	 * USARTDIV = 4.34
-	 * FRACTION: 16 x 0.34 = 0d5.44 0d5 -> 0x5
-	 * MANTISSA: 0d4.34 0d4 -> 0x4 
-	 * USART_BRR = 0x45*/
+	set_baudrate();
 
-	regw_u32(USART1_BRR, 0x00000045, 0, OWRITE);
 	regw_u32(USART1_CR2, 0x0000, 0, OWRITE); //set stop bit, default is 1 stop bit 0x00
 	
 	/* parity = 8 bit, UART1 enabled,
@@ -72,7 +68,7 @@ void uart_init() {
 }
 
 static void wait() {
-	for (int i = 0; i < 100; i++);
+	for (int i = 0; i < 400; i++);
 }
 
 void uart_putc(unsigned char ch) {
@@ -100,12 +96,24 @@ char uart_getc(void) {
          return 0;
  }
 
+/* Calculate baud rate. Example how this is done
+ * to set this register on a stm32
+ * Desired baudrate: 115200,  CLK: 8 MHz
+ * Desired Baudrate = CLK / (16 * USARTDIV)
+ * USARTDIV = 4.34
+ * FRACTION: 16 x 0.34 = 0d5.44 0d5 -> 0x5
+ * MANTISSA: 0d4.34 0d4 -> 0x4 
+ * USART_BRR = 0x45*/
+	
+void set_baudrate() {
 
-// move to library 
-/* extern void uart_puts(unsigned char *str) {
-    int i;
-    for (i = 0; i < strlen(str); i++)     {
-        uart_putc(str[i]);
-    }
-} */
-
+//	rwrite(USART1_BRR, 0x000001A1); 48 MHZ
+//	rwrite(USART1_BRR, 0x0000022B); 64 MHz
+//	rwrite(USART1_BRR, 0x00000138); 36 MHz
+//	rwrite(USART1_BRR, 0x00000271); 72 MHz
+#ifdef ENABLE_HSE
+	rwrite(USART1_BRR, 0x00000138);
+#else
+	rwrite(USART1_BRR, 0x00000045);
+#endif
+}

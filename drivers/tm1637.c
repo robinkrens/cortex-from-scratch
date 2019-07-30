@@ -28,7 +28,7 @@
 
 #include <drivers/tm1637.h>
 
-#define TIMEOUT 1000
+#define TIMEOUT 5000
 
 #define DATASET	0x40
 #define CONTROL	0x80
@@ -79,7 +79,7 @@ static void stop_condition() {
 int ack_recv() {
 
 	int cnt = 0;
-	while(!(*I2C_SR1 & 0x1)) {
+	while(!(*I2C_SR1 & 0x2)) {
 		cnt++;
 		if (cnt > TIMEOUT)
 			return 0;
@@ -87,6 +87,17 @@ int ack_recv() {
 
 	return 1;
 
+}
+
+int buf_empty() {
+	int cnt = 0;
+	while(!(*I2C_SR1 & 0x80)) {
+		cnt++;
+		if (cnt > TIMEOUT)
+			return 0;
+	}
+
+	return 1;
 }
 
 int delay() {
@@ -127,18 +138,18 @@ void tm1637_start() {
 	//statusr = *I2C_SR1;
 	//statusr = *I2C_SR2;
 	regw_u32(I2C_DR, 0x7D, 0, OWRITE);
-	if(!ack_recv())
+	if(!buf_empty())
 		cputs("TIMEOUT3!");
 	stop_condition();
 
-	delay();
+/*	delay();
 
 	start_condition();
 	statusr = *I2C_SR1;
 	regw_u32(I2C_DR, DISPLAY_ON, 0, OWRITE);
 	if(!ack_recv())
 		cputs("TIMEOUT4!");
-	stop_condition();
+	stop_condition(); */
 
 
 	/* regw_u32(I2C_CR1, 0x1, 8, SETBIT); //start

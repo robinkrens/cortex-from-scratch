@@ -26,15 +26,35 @@
 
 void main()
 {
+	clock_init();
 	ivt_init();
 	uart_init();
 //	cputs("ROBSYS LOADING...\n");
 	systick_init();
 	led_init();
+
+	// SPEED_TEST
+/*	cputs("START TEST (8MHz) \n");
+	int a;
+	for (int i = 0; i < 20000000; i++) {
+		a + 2;	
+	}
+	a = 0;
+	cputs("END TEST\n");
+	
+	//! 
+	clock_init();
+
+	cputs("START TEST (??MHz) \n");
+	for (int i = 0; i < 20000000; i++) {
+		a + 2;	
+	}
+	cputs("END TEST\n"); */
+
 	sysinfo();
 
-	tm1637_init();
-	tm1637_start();
+//	tm1637_init();
+//	tm1637_start();
 
 	//uint32_t test = hextoreg("12345678");
 		

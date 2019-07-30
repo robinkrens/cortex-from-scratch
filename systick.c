@@ -5,7 +5,8 @@
 #include <sys/robsys.h>
 #include <sys/mmap.h>
 
-#include <lib/regfunc.h> // TODO
+#include <lib/regfunc.h>
+#include <lib/stdio.h>
 
 struct interrupt_frame {
 
@@ -22,25 +23,31 @@ struct interrupt_frame {
 //__attribute__ ((interrupt))
 void * systick_handler(/* struct interrupt_frame * frame */) {
 
-//	uint32_t volatile status;
-	//uart_puts("TICKING\n");
+//	cputs("TICKING\n");
 //	for(;;);
 }
 
 
 void systick_init() {
 
-	/* Enable the counter and enable the interrupt
-	 * associated with it */
-	*STK_CTRL = (volatile uint32_t) 0x00000003;
-
-	/* The counter reload register here holds 
-	 * 0x1000 -- that's 4096 clock cycles -- if 
-	 * it is down to zero it is restores the value */
-	*STK_RELOAD = (volatile uint32_t) 0x00400000; 
-
 	/* Every time the counter counts down to zero
 	 * a systick exception is asserted. Systick has
 	 * exception number 15. in the vector table  */
 	ivt_set_gate(15, systick_handler, 0); 
+
+	/* Get calibration and set this to 1 sec
+	 * !Most boards have a 1 ms or 10 ms 
+	 * calibration value */
+	int calib = (*STK_CALIB << 0) * 500;
+
+	/* The counter reload registers counts down to zero
+	 * and then it is restores the value */
+	rwrite(STK_RELOAD, calib);
+	
+	/* Enable the counter and enable the interrupt
+	 * associated with it */
+	rsetbit(STK_CTRL, 0);
+	rsetbit(STK_CTRL, 1);
+
+
 }

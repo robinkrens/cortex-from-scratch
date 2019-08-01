@@ -20,7 +20,7 @@ INCLUDE+= -Iinclude
 BIN = bin
 
 ODIR = obj
-_OBJ = ivt.o systick.o sysinfo.o term.o main.o clock.o 
+_OBJ = ivt.o systick.o sysinfo.o term.o main.o clock.o rtc.o 
 OBJ = $(patsubst %, $(ODIR)/%,$(_OBJ))
 
 DDIR = obj/drivers

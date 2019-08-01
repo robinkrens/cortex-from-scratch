@@ -13,9 +13,6 @@
  * Some buses might not support the maximum speed and
  * should be prescaled (i.e. low speed APB)
  * 
- * 2. Routines to setup a real time clock (RTC). A external 
- * low speed oscillator (LSE) is used. 
- *
  * $USAGE
  * Check external crystals on board and maximum speed
  * for buses. In this example, a 8 Mhz external crystal
@@ -48,34 +45,11 @@ static void setup_hse() {
 	while(!rchkbit(RCC_CFGR, 3)); /* Wait for the clock switch to complete */
 }
 
-static void setup_rtc() {
-
-// TODO: long time to get stable?
-//	/* Enable PWREN and BKPEN */
-//	rsetbit(RCC_APB1ENR, 28);
-//	rsetbit(RCC_APB1ENR, 27);
-//
-//	/* Enable access to backup registers and RTC */
-//	rsetbit(PWR_CR, 8);
-//
-//	rsetbit(RCC_BDCR, 0); /* LSE enable */
-//	while(!rchkbit(RCC_BDCR, 1)); /* wait for LSE to come up */
-//	
-//	rsetbitsfrom(RCC_BDCR, 8, 0x1); /* use LSE as RTC source */
-//	rsetbit(RCC_BDCR, 15); /* enable RTC */
-//	
-
-}
-
 void clock_init() {
 
 #ifdef ENABLE_HSE
 setup_hse();
 #endif
 
-#ifdef ENABLE_RTC
-setup_rtc();
-#endif
-      
 }
 

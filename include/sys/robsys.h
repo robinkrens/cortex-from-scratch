@@ -9,12 +9,15 @@
  * rates etc.
  */
 #define ENABLE_HSE	
-#define ENABLE_RTC	
 //efine CRYSTAL_MHZ 	8
 //efine CLKSPEED_MHZ 	72
 extern void clock_init();
-extern int clock_test();
+// extern int clock_test();
 // extern void clock_reset();
+
+/* RTC.C */
+#define ENABLE_RTC	
+extern void rtc_init();
 
 /* IVT.C */
 extern void ivt_init();

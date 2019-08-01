@@ -15,14 +15,15 @@
 #define BUFSIZE 200
 #define MAXARGS 5
 #define WHITESPACE "\t\r\n "
-#define BUILTINCMDS 3
+#define BUILTINCMDS 4
 
 int help(int, char**);
 
 /* 
  * Built in commands
  * 	info -- shows basic info of system
- * 	reset -- software reset
+ * 	uptime -- uptime; read from the RTC register
+ * 	reset -- software reset TODO
  * 	show [ADDRESS-ADDRESS] -- shows SRAM range
  * 	switchmode -- switch to unprivileged mode
  * */
@@ -37,9 +38,15 @@ struct cmd {
 
 struct cmd builtincmds[4];
 
-int help(int argc, char ** argsv) {
+int info(int argc, char ** argsv) {
 	sysinfo();
 	return 0;
+}
+
+int uptime(int arg, char ** argsv) {
+	cputs("CURRENT UPTIME: ");
+	cputs(regtohex(*RTC_CNTL));
+	cputchar('\n');
 }
 
 int led(int argc, char ** argsv) {
@@ -116,14 +123,18 @@ int exec_cmd(char * buf) {
 
 void terminal() {
 
-       	builtincmds[0].name = "help";
-	builtincmds[0].function = help;
+       	builtincmds[0].name = "info";
+	builtincmds[0].function = info;
 
 	builtincmds[1].name = "led";
 	builtincmds[1].function = led;
 
 	builtincmds[2].name = "show";
 	builtincmds[2].function = show;
+
+	builtincmds[3].name = "uptime";
+	builtincmds[3].function = uptime;
+
 
 	char *buf;
         cputs("WELCOME TO ROBSYS!\n");

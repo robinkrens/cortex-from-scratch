@@ -24,6 +24,12 @@
 #include <drivers/led.h>
 #include <drivers/tm1637.h>
 
+//void sleep() {
+//
+//	__asm__ __volatile__("wfe");
+//
+//}
+
 void main()
 {
 	clock_init();
@@ -32,6 +38,7 @@ void main()
 //	cputs("ROBSYS LOADING...\n");
 	systick_init();
 	led_init();
+	rtc_init();
 
 	// SPEED_TEST
 /*	cputs("START TEST (8MHz) \n");
@@ -50,8 +57,8 @@ void main()
 		a + 2;	
 	}
 	cputs("END TEST\n"); */
-
 	sysinfo();
+
 
 //	tm1637_init();
 //	tm1637_start();

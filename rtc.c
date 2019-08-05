@@ -18,19 +18,22 @@
 #include <lib/regfunc.h>
 #include <lib/stdio.h>
 
+#include <drivers/led.h>
+
 
 static void periodic_intr() {
 
 	while(!rchkbit(RTC_CRL, 5)); // Check last write is terminated
-	rsetbit(RTC_CRL, 4);
+	rsetbit(RTC_CRL, 4); // start configure
       	
 	rsetbit(RTC_CRH, 0); // enable periodic (second) interrupt
 	
 	while(!rchkbit(RTC_CRL, 5)); 
 
 	rwrite(RTC_PRLL, 0x7FFF); // 1 second
-	rclrbit(RTC_CRL, 4);
+	rclrbit(RTC_CRL, 4); // stop configure
 	while(!rchkbit(RTC_CRL, 5)); // Check last write is terminated
+	rsetbit(NVIC_ISER0, 3); // enable in register vector
 }
 
 static void calibrate_rtc() {
@@ -49,6 +52,10 @@ static void calibrate_rtc() {
 void * rtc_handler() {
 
 	//cputs("TICKING IN REAL TIME\n");
+	//uint32_t curr = *RTC_CNTL;
+	int even = *RTC_CNTL % 2;
+	(!even) ? led_off() : led_on();
+
 	rclrbit(RTC_CRL, 0);
 }
 

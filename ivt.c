@@ -30,6 +30,7 @@
 #include <lib/stdio.h>
 #include <lib/string.h>
 #include <lib/regfunc.h>
+#include <lib/tinyprintf.h>
 
 /* 
  * These values are pushed on the stack just before
@@ -92,13 +93,15 @@ char * messages[] = {
 
 if (intnr < 20) // TODO: strlen
 	return messages[intnr];
-	return NULL;
+
+return "UNKNOWN";
 }
 
 void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 
 	ivt[num] = (uint32_t) isr;
-	*NVIC_ISER0 = (1 << ((uint32_t)(num) & 0x1F));
+//	if (num <= 32)
+//		*NVIC_ISER0 = (1 << ((uint32_t)(num) & 0x1F));
 	/* TODO: Priorities */
 }
 
@@ -106,16 +109,23 @@ void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 /* Dummy interrupt: comment out the comment to use a naked
  * function */
 
-// __attribute__ ((interrupt)) 
-void * dummy_isr(/* struct interrupt_frame * frame */) {
+__attribute__ ((interrupt)) 
+void * dummy_isr( struct interrupt_frame * frame ) {
 
 	uint8_t nr = *SCB_VTOR_ST & 0xFF;
+	//printf("PC:%p\n",frame->lr);
+	printf("EXCEPTION: %s\n", exception_message(nr));
+	printf("STACK TRACE:\n");
+	printf("R0:%p\n",frame->r0);
+	printf("R1:%p\n",frame->r1);
+	printf("R2:%p\n",frame->r2);
+	printf("R3:%p\n",frame->r3);
+	printf("R12:%p\n",frame->r12);
+	printf("LR:%p\n",frame->lr);
+	printf("PC:%p\n",frame->pc);
+	printf("PSR:%p\n",frame->psr);
 	
-	cputs("EXCEPTION: ");
-	cputs(exception_message(nr));
-	cputs("\nSYSTEM HALTED\n");
-	
-	for(;;);
+	//for(;;);
 }
 
 /* Initialize interrupt vector  */

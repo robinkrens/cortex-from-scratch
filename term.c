@@ -8,6 +8,7 @@
 #include <lib/stdio.h>
 #include <lib/string.h>
 #include <lib/regfunc.h>
+#include <lib/tinyprintf.h>
 
 #include <drivers/led.h>
 
@@ -44,9 +45,10 @@ int info(int argc, char ** argsv) {
 }
 
 int uptime(int arg, char ** argsv) {
-	cputs("CURRENT UPTIME: ");
-	cputs(regtohex(*RTC_CNTL));
-	cputchar('\n');
+	//cputs("CURRENT UPTIME: ");
+	//cputs(regtohex(*RTC_CNTL));
+	//cputchar('\n');
+	printf("CURRENT UPTIME: %p\n", *RTC_CNTL);
 }
 
 int led(int argc, char ** argsv) {

@@ -24,11 +24,11 @@ _OBJ = ivt.o systick.o sysinfo.o term.o main.o clock.o rtc.o
 OBJ = $(patsubst %, $(ODIR)/%,$(_OBJ))
 
 DDIR = obj/drivers
-_DRIVERS = uart.o tm1637.o led.o
+_DRIVERS = uart.o tm1637.o led.o tsensor.o
 DRIVERS = $(patsubst %, $(DDIR)/%,$(_DRIVERS))
 
 LDIR = obj/lib
-_LIBS = string.o stdio.o regfunc.o pool.o  
+_LIBS = string.o stdio.o regfunc.o pool.o tinyprintf.o 
 LIBS = $(patsubst %, $(LDIR)/%,$(_LIBS))
 
 $(DDIR)/%.o: drivers/%.c

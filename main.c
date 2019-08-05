@@ -19,10 +19,12 @@
 
 #include <lib/regfunc.h>
 #include <lib/stdio.h>
+#include <lib/tinyprintf.h>
 
 #include <drivers/uart.h>
 #include <drivers/led.h>
 #include <drivers/tm1637.h>
+#include <drivers/tsensor.h>
 
 //void sleep() {
 //
@@ -39,7 +41,9 @@ void main()
 	systick_init();
 	led_init();
 	rtc_init();
+	tsensor_init();
 
+	init_printf(NULL, putc);
 	// SPEED_TEST
 /*	cputs("START TEST (8MHz) \n");
 	int a;

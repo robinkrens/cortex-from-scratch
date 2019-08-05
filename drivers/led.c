@@ -31,17 +31,25 @@
 
 void led_init() {
 
-	regw_u8(RCC_APB2ENR, 0x1, 4, SETBIT); // enable GPIOC
-	regw_u32(GPIOC_CRL, 0x44444442, 0, OWRITE); // set PC0 pin to output mode
-	*GPIOC_ODR = 0xFFFF; // only writable in word mode
+	rsetbit(RCC_APB2ENR, 5); // enable GPIOD
+	rsetbit(RCC_APB2ENR, 2); // enable GPIOA
+
+	//rwrite(GPIOD_CRL, 0x44444644); 
+	rsetbitsfrom(GPIOD_CRL, 8, 0x6);
+	rsetbitsfrom(GPIOA_CRH, 0, 0x6);
+	rsetbit(GPIOD_ODR, 2);
+	rclrbit(GPIOA_ODR, 8);
 
 }
 
 void led_on() {
-	*GPIOC_ODR = 0x0001;
+	rsetbit(GPIOD_ODR, 2);
+	rclrbit(GPIOA_ODR, 8);
+
 }
 
 void led_off() {
-	*GPIOC_ODR = 0x0000;
+	rclrbit(GPIOD_ODR, 2);
+	rsetbit(GPIOA_ODR, 8);
 }
 

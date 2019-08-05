@@ -31,6 +31,12 @@ void cputchar(char c) {
 
 }
 
+void putc(void *p, char c) {
+
+	cputchar(c);
+
+}
+
 void cputs(unsigned char *str) {
      
      int i;

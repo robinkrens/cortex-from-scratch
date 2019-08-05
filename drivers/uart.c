@@ -38,28 +38,27 @@ void uart_init() {
 	linefeed.wpos = 0;
 
 	//memset(&linefeed, 0, (sizeof(struct linefeed) ));
-	//regw_u32(RCC_APB2ENR, 0x4005, 0, SETBIT);// enable clock to UART1, AFIO and GPIOA
-	rsetbitsfrom(RCC_APB2ENR, 0, 0x4005);
+	//rsetbitsfrom(RCC_APB2ENR, 0, 0x4005);
+	rsetbit(RCC_APB2ENR, 0);
+	rsetbit(RCC_APB2ENR, 2);
+	rsetbit(RCC_APB2ENR, 14);
 	
 	/* (after enable GPIOA), on PA9&PA10 and set mode
 	 *  to alternative output */
-	//regw_u32(GPIOA_CRH, 0x444444D4, 0, OWRITE);
 	rwrite(GPIOA_CRH, 0x444444D4);
-	//regw_u8(AFIO_EVCR, 0x89, 0, OWRITE);// set event control register, output on PA, Pin 9 TODO: check
+	// set event control register, output on PA, Pin 9 TODO: check
 	rsetbitsfrom(AFIO_EVCR, 0, 0x89);
 
 	//disable temporarily to set values
-	//regw_u8(USART1_CR1, 0x0, 13, SETBIT);
 	rclrbit(USART1_CR1, 13);
 
 	set_baudrate();
 
-	//regw_u32(USART1_CR2, 0x0000, 0, OWRITE); //set stop bit, default is 1 stop bit 0x00
+	//set stop bit, default is 1 stop bit 0x00
 	rwrite(USART1_CR2, 0x0000);
 	
 	/* parity = 8 bit, UART1 enabled,
 	 * TX and RX enabled, interrupts enabled */
-	//regw_u32(USART1_CR1, 0x0000302C, 0, OWRITE);
 	rwrite(USART1_CR1, 0x0000302C);
 
 	ivt_set_gate(53, uart_handler, 0);

@@ -39,9 +39,7 @@ void main()
 	uart_init();
 //	cputs("ROBSYS LOADING...\n");
 	systick_init();
-	led_init();
-	rtc_init();
-	tsensor_init();
+//	tsensor_output(0xFFFF, 0x7FFF);
 
 	init_printf(NULL, putc);
 	// SPEED_TEST
@@ -63,6 +61,11 @@ void main()
 	cputs("END TEST\n"); */
 	sysinfo();
 
+
+	tsensor_input(5000);
+
+	led_init();
+	rtc_init();
 
 //	tm1637_init();
 //	tm1637_start();

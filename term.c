@@ -139,7 +139,7 @@ void terminal() {
 
 
 	char *buf;
-        cputs("WELCOME TO ROBSYS!\n");
+        //cputs("WELCOME TO ROBSYS!\n");
  
          while (1) {
                  buf = readline("root# ");

@@ -37,8 +37,8 @@ void led_init() {
 	//rwrite(GPIOD_CRL, 0x44444644); 
 	rsetbitsfrom(GPIOD_CRL, 8, 0x6);
 	rsetbitsfrom(GPIOA_CRH, 0, 0x6);
-	rsetbit(GPIOD_ODR, 2);
-	rclrbit(GPIOA_ODR, 8);
+//	rsetbit(GPIOD_ODR, 2);
+//	rclrbit(GPIOA_ODR, 8);
 
 }
 

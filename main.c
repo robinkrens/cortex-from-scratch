@@ -24,6 +24,7 @@
 #include <drivers/uart.h>
 #include <drivers/led.h>
 #include <drivers/tm1637.h>
+#include <drivers/at24c.h>
 #include <drivers/tsensor.h>
 
 //void sleep() {
@@ -62,10 +63,13 @@ void main()
 	sysinfo();
 
 
-	tsensor_input(5000);
+//	tsensor_input(5000);
+//	run();
 
 	led_init();
-	rtc_init();
+	at24c_init();
+	at24c_run();
+//	rtc_init();
 
 //	tm1637_init();
 //	tm1637_start();

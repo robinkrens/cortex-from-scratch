@@ -13,7 +13,7 @@
 #include <sys/robsys.h>
 #include <sys/mmap.h>
 
-#include <lib/stdio.h>
+#include <lib/tinyprintf.h>
 #include <lib/regfunc.h>
 
 
@@ -22,28 +22,28 @@ uint32_t get_msp(void);
 void sysinfo() {
 
 	uint32_t tmp = *MCU_ID;
-	cputs("# DEVICE ID: ");
+	printf("# DEVICE ID: ");
 
 	if (tmp & 0x414) 
-		cputs("HIGH DENSITY\n");
+		printf("HIGH DENSITY\n");
 	else {
-		cputs("UNKNOWN\n");
+		printf("UNKNOWN\n");
 	}
 
 	tmp = (tmp >> 16);
-	cputs("# REVISION: ");
+	printf("# REVISION: ");
 	switch	(tmp) {
 		case 0x1000:
-		      cputs("REVISION A\n");
+		      printf("REVISION A\n");
 		      break;
 		case 0x1001:
-		      cputs("REVISION Z\n");
+		      printf("REVISION Z\n");
 		      break;
 		case 0x1003:
-		      cputs("REVISION 1/2/3/X/Y\n");
+		      printf("REVISION 1/2/3/X/Y\n");
 		      break;
 		default:
-		      cputs("UNKNOWN\n");
+		      printf("UNKNOWN\n");
 	}
 
 	extern char _endofbss;
@@ -53,15 +53,15 @@ void sysinfo() {
 	uint32_t data_bss = &_endofbss - SRAM_OFFSET;
 	uint32_t mem_free = SRAM_SIZE - stack_usage - data_bss;
 
-	cputs("# TOTAL MEMORY: ");
-	cputs(regtohex(SRAM_SIZE));
-	cputchar('\n');
-	cputs("# FREE MEMORY: ");
-	cputs(regtohex(mem_free));
-	cputchar('\n');
-	cputs("# STACK USAGE: ");
-	cputs(regtohex(stack_usage));
-	cputchar('\n');
+	printf("# TOTAL MEMORY: %#x\n", SRAM_SIZE);
+//	cputs(regtohex(SRAM_SIZE));
+//	cputchar('\n');
+	printf("# FREE MEMORY: %#x\n", mem_free);
+//	cputs(regtohex(mem_free));
+//	cputchar('\n');
+	printf("# STACK USAGE: %#x\n", stack_usage);
+//	cputs(regtohex(stack_usage));
+//	cputchar('\n');
 
 }
 

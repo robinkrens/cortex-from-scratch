@@ -39,7 +39,7 @@ void main()
 	ivt_init();
 	uart_init();
 //	cputs("ROBSYS LOADING...\n");
-	systick_init();
+	//systick_init();
 //	tsensor_output(0xFFFF, 0x7FFF);
 
 	init_printf(NULL, putc);

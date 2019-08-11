@@ -26,51 +26,49 @@
 
 #define READ_CMD	0xA1
 #define WRITE_CMD	0xA0
-
+#define PAGE 64 /* Bytes that can be written continiously */
+#define BUFFER 256 /* */
 
 /* STM32F1 microcontrollers do not provide the ability to pull-up SDA and SCL lines. Their
 GPIOs must be configured as open-drain. So, you have to add two additional resistors to
-pull-up I2C lines. Something between 4K and 10K is a proven value.
+pull-up I2C lines. Something between 4K and 10K is a proven value. 
 */
+
+char buf[BUFFER];
+
+void * cap_handler() {
+
+	printf("a!");
+}
 
 void at24c_init() {
 
- /* Program the peripheral input clock in I2C_CR2 Register in order to generate correct timings
- Configure the clock control registers CCR
- Configure the rise time register TRIS
- Program the I2C_CR1 register to enable the peripheral
-
- ENABLE GPIOB6 and B7*/
+ /* Program the peripheral input clock in I2C_CR2 Register
+  *  in order to generate correct timings. Configure the clock control registers CCR
+ Configure the rise time register TRIS  Program the I2C_CR1 register to enable the peripheral Enable GPIOB6 and B7*/
 
  rsetbit(RCC_APB1ENR, 21);
  rsetbit(RCC_APB2ENR, 3);
- // //regw_u8(AFIO_EVCR, 0x89, 0, SETBIT);// set event control register, output on ?
- 
  rwrite(GPIOB_CRL, 0xEE444444);
-
- rsetbitsfrom(I2C_CR2, 0, 0x2); // 36 MHz 
+ rsetbitsfrom(I2C_CR2, 0, 0x2); // 2 MHz 
  rwrite(I2C_TRISE, 0x3); // MAX = 1000ns, TPCLK1 = 500ns (+1)
  rwrite(I2C_CCR, 0x000A); // standard mode， output 100 kHz (100hz* / perip)
-
- rsetbit(I2C_CR1, 10); // send ack if receive
-
+ rsetbit(I2C_CR1, 10); // send ack if Master receives data
+ rsetbit(I2C_CR2, 10); // buffer interrupt
  rsetbit(I2C_CR1, 0); // enable
+
 
 }
 
 static void start_condition() {
-
 	rsetbit(I2C_CR1, 8); //start
-
 }
 
 static void stop_condition() {
-
 	rsetbit(I2C_CR1, 9); //stop
 }
 
 static int ack_recv() {
-
 	int cnt = 0;
 	while(!(*I2C_SR1 & 0x2)) {
 		cnt++;
@@ -80,7 +78,6 @@ static int ack_recv() {
 
 	int a = *I2C_SR2;
 	return 1;
-
 }
 
 static int buf_empty() {
@@ -90,20 +87,16 @@ static int buf_empty() {
 		if (cnt > TIMEOUT)
 			return 0;
 	}
-
 	return 1;
 }
 
+// TODO: interrupt base, so it doesn't block
 static void data_recv() {
-	//int cnt = 0;
-	while(!(*I2C_SR1 & 0x4)) {
-	///	cnt++;
-	//	if (cnt > TIMEOUT)
-	//		return 0;
+	while(!(*I2C_SR1 & 0x40)) {
 	}
-	//return 1;
 }
 
+// TODO: polling
 static int delay() {
 
 	int a = 0;
@@ -111,37 +104,133 @@ static int delay() {
 		a++;
 }
 
+int eeprom_write(uint16_t addr, char * data, size_t size) {
+	
+	if(size > PAGE) {
+		printf("Maximum writable page size: %d\n", PAGE);
+		return -1;
+	}
+
+	uint8_t hi_lo[] = { (uint8_t)(addr >> 8), (uint8_t)addr }; 
+	
+	start_condition();
+	rwrite(I2C_DR, WRITE_CMD);
+	if(!ack_recv()) {
+		printf("Can't reach device");
+		return -1;
+	}
+
+	rwrite(I2C_DR, hi_lo[0]); // higher part of address
+	if(!buf_empty()) {
+		printf("Can't address location");
+		return -1;
+	}
+	rwrite(I2C_DR,hi_lo[1]); // lower part of address
+	if(!buf_empty()) {
+		printf("Can't address location");
+		return -1;
+	}
+
+	for (int i = 0; i < size; i++) {
+		rwrite(I2C_DR, *data++);
+		if(!buf_empty()) {
+			printf("Write error");
+			return -1;
+		}	
+	}
+
+	stop_condition();
+	
+	return 0;
+}
+/* Random access read based on dummy write  */
+int eeprom_read(uint16_t addr, int num) {
+
+	printf("ENTERING");	
+	uint8_t hi_lo[] = { (uint8_t)(addr >> 8), (uint8_t)addr }; 
+	
+	start_condition();
+	
+	rwrite(I2C_DR, WRITE_CMD);
+	if(!ack_recv()) {
+		printf("Can't reach device");
+		return -1;
+	}
+
+	rwrite(I2C_DR, hi_lo[0]); // higher part of address
+	if(!buf_empty()) {
+		printf("Can't address location");
+		return -1;
+	}
+	rwrite(I2C_DR,hi_lo[1]); // lower part of address
+	if(!buf_empty()) {
+		printf("Can't address location");
+		return -1;
+	}
+
+	stop_condition();
+	
+	delay(); // NEEDED?
+
+	start_condition(); // restart condition
+	rwrite(I2C_DR, READ_CMD); // read? to address CMD
+	if(!ack_recv()) {
+		printf("Can't initiate read");
+		return -1;
+	}
+
+
+ 	rsetbit(I2C_CR1, 10); // send ack if Master receives data
+//	data_recv();
+//	char c = *I2C_DR;
+//	printf("%d:%p\n", addr, c);
+	for (int i = 0; i < BUFFER ; i++ ) {
+		data_recv();
+		buf[i] = (char) *I2C_DR;
+	}
+
+	printf("%p, %p, %p, %p\n", *I2C_SR1, *I2C_SR2, *I2C_DR, *I2C_CR1);
+	printf("DATA: %s\n", buf);
+
+}
+
 void at24c_run() {
 
-//	regw_u32(I2C_CR1, 0x1, 8, SETBIT);
-//	uint32_t read_status = *I2C_SR1;
+//	char * global_data = "abcdefghijklmnop";
 
-//	regw_u32(I2C_DR, DATASET, 0, OWRITE); 
-	// conform DATA
-//	read_status = *I2C_SR1;
-//	read_status = *I2C_SR2;
+//	eeprom_write(0x0080, global_data, strlen(global_data));
+	
+//	delay();
 
-	uint32_t statusr;
+//	for (int i = 0; i < 0xFFFF; i++) { 
+//		eeprom_read(i);
+//		delay();
+//	}
 
-	start_condition();
-	//uint32_t statusr = *I2C_SR1; // clear start_signal
-	rwrite(I2C_DR, 0xA0); // write to address CMD
-	if(!ack_recv())
-		cputs("CAN'T REACH DEVICE");
+	//delay();
 
-	rwrite(I2C_DR, 0x00);
-	if(!buf_empty())
-		cputs("FAIL");
-	rwrite(I2C_DR, 0x00);
-	if(!buf_empty()) 
-		cputs("FAIL");
-	//rwrite(I2C_DR, 0x61);
-	//if(!buf_empty())
-	//	cputs("FAIL");
+	eeprom_read(0x0000);
 
-	//statusr = *I2C_SR1;
-	//statusr = *I2C_SR2;
-	stop_condition();
+//W	uint32_t statusr;
+//W
+//W	start_condition();
+//W	rwrite(I2C_DR, WRITE_CMD); // write to address CMD
+//W	if(!ack_recv())
+//W		cputs("CAN'T REACH DEVICE");
+//W
+//W	rwrite(I2C_DR, 0x00);
+//W	if(!buf_empty())
+//W		cputs("FAIL");
+//W	rwrite(I2C_DR, 0x03);
+//W	if(!buf_empty()) 
+//W		cputs("FAIL");
+//W	//rwrite(I2C_DR, 0x61);
+//W	//if(!buf_empty())
+//W	//	cputs("FAIL");
+//W
+//W	//statusr = *I2C_SR1;
+//W	//statusr = *I2C_SR2;
+//W	stop_condition();
 
 //	start_condition();
 //	rwrite(I2C_DR, 0xA0); // dummy write
@@ -155,21 +244,21 @@ void at24c_run() {
 //	if(!buf_empty()) 
 //		cputs("FAIL");
 //
-	delay();
-
-	start_condition(); // restart condition
-	rwrite(I2C_DR, 0xA1); // read? to address CMD
-	if(!ack_recv())
-		cputs("COULDN'T START READ CMD");
-
-
-	data_recv();
-		//cputs("NO RESPONSE");
-
-	char a = (char) *I2C_DR;
-	printf("DATA %c\n", a); 
-
-	stop_condition();
+//W	delay();
+//W
+//W	start_condition(); // restart condition
+//W	rwrite(I2C_DR, 0xA1); // read? to address CMD
+//W	if(!ack_recv())
+//W		cputs("COULDN'T START READ CMD");
+//W
+//W
+//W	data_recv();
+//W		//cputs("NO RESPONSE");
+//W
+//W	char a = (char) *I2C_DR;
+//W	printf("DATA %c\n", a); 
+//W
+//W	stop_condition();
 	//delay();
 
 	//start_condition();

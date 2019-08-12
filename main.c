@@ -67,8 +67,8 @@ void main()
 //	run();
 
 	led_init();
-	at24c_init();
-	at24c_run();
+	eeprom_at24c_init();
+	eeprom_test();
 //	rtc_init();
 
 //	tm1637_init();

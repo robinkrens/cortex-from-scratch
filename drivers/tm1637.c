@@ -42,6 +42,8 @@ GPIOs must be configured as open-drain. So, you have to add two additional resis
 pull-up I2C lines. Something between 4K and 10K is a proven value.
 */
 
+/* BIG ENDIAN! */
+
 void tm1637_init() {
 
  /* Program the peripheral input clock in I2C_CR2 Register in order to generate correct timings
@@ -76,15 +78,39 @@ static void stop_condition() {
 	regw_u32(I2C_CR1, 0x1, 9, SETBIT); //stop
 }
 
+static int buf_empty() {
+        int cnt = 0;
+        while(!(*I2C_SR1 & 0x80)) {
+                cnt++;
+                if (cnt > TIMEOUT) {
+                        return 0;
+                }
+        }
+        return 1;
+}
+
 int ack_recv() {
 
 	int cnt = 0;
-	while(!(*I2C_SR1 & 0x1)) {
+	while(!(*I2C_SR1 & 0x2)) {
 		cnt++;
 		if (cnt > TIMEOUT)
 			return 0;
 	}
+	uint32_t a = *I2C_SR2;
+	return 1;
 
+}
+
+int ack10_recv() {
+
+	int cnt = 0;
+	while(!(*I2C_SR1 & 0x8)) {
+		cnt++;
+		if (cnt > TIMEOUT)
+			return 0;
+	}
+	//uint32_t a = *I2C_SR2;
 	return 1;
 
 }
@@ -96,6 +122,22 @@ int delay() {
 		a++;
 }
 
+void set_brightness(uint8_t degree) {
+
+	// set pulse!
+	start_condition();
+//	regw_u32(I2C_DR, 0xF0, 0, OWRITE);
+  //      if(!ack10_recv())
+//		cputs("Error: can not set dummy header");
+
+	regw_u32(I2C_DR, 0xF1, 0, OWRITE);
+	if(!ack_recv())
+		cputs("TIMEOUT3!");
+	stop_condition();
+
+}
+
+
 void tm1637_start() {
 
 //	regw_u32(I2C_CR1, 0x1, 8, SETBIT);
@@ -106,39 +148,71 @@ void tm1637_start() {
 //	read_status = *I2C_SR1;
 //	read_status = *I2C_SR2;
 
-	uint32_t statusr;
+
+
+//	start_condition();
+//	//uint32_t statusr = *I2C_SR1; // clear start_signal
+//	regw_u32(I2C_DR, 0x20, 0, OWRITE); // write to address CMD
+//	if(!ack_recv())
+//		cputs("TIMEOUT!");
+//	//statusr = *I2C_SR1;
+//	//statusr = *I2C_SR2;
+//	stop_condition();
+//
+//	//delay();
+	
+	start_condition();
+	regw_u32(I2C_DR, 0x20, 0, OWRITE); // dummy address
+	if(!ack_recv())
+		cputs("Error: initiating write command\n");
+
+	stop_condition();
+	
+       	delay();
 
 	start_condition();
-	//uint32_t statusr = *I2C_SR1; // clear start_signal
-	regw_u32(I2C_DR, 0x40, 0, OWRITE); // write to address CMD
+	regw_u32(I2C_DR, 0xF0, 0, OWRITE); // dummy header F0 ignored! any value will do as long as last bit is not set
+	if(!ack10_recv())
+		cputs("Error: dummy addr-10 header not acknowledged\n");
+	regw_u32(I2C_DR, 0x04, 0, OWRITE);
 	if(!ack_recv())
-		cputs("TIMEOUT!");
-	//statusr = *I2C_SR1;
-	//statusr = *I2C_SR2;
+		cputs("Error: can't set location\n");
+	regw_u32(I2C_DR, 0x04, 0, OWRITE);
+	if(!buf_empty())
+		cputs("Error: can't write\n");
+	regw_u32(I2C_DR, 0x08, 0, OWRITE);
+	if(!buf_empty()) 
+		cputs("Error: can't write\n");
+	regw_u32(I2C_DR, 0x08, 0, OWRITE);
+	if(!buf_empty()) 
+		cputs("Error: can't write\n");
 	stop_condition();
 
-	//delay();
-
-	start_condition();
-	//statusr = *I2C_SR1; // clear start_signal
-	regw_u32(I2C_DR, 0xC1, 0, OWRITE);
+			/*
+	regw_u32(I2C_DR, 0x00, 0, OWRITE); // ？ dummy address
 	if(!ack_recv())
-		cputs("TIMEOUT2!");
-	//statusr = *I2C_SR1;
-	//statusr = *I2C_SR2;
-	regw_u32(I2C_DR, 0x7D, 0, OWRITE);
-	if(!ack_recv())
-		cputs("TIMEOUT3!");
-	stop_condition();
+		cputs("TIMEOUTA");
+	regw_u32(I2C_DR, 0x03, 0, OWRITE);
+	if(!buf_empty())
+		cputs("TIMEOUT2A");
+	regw_u32(I2C_DR, 0xFF, 0, OWRITE);
+	if(!buf_empty())
+		cputs("TIMEOUT2B"); */
+//
+//
 
 	delay();
+	set_brightness(0x00);
+	
+
+/*	delay();
 
 	start_condition();
 	statusr = *I2C_SR1;
 	regw_u32(I2C_DR, DISPLAY_ON, 0, OWRITE);
 	if(!ack_recv())
 		cputs("TIMEOUT4!");
-	stop_condition();
+	stop_condition(); */
 
 
 	/* regw_u32(I2C_CR1, 0x1, 8, SETBIT); //start

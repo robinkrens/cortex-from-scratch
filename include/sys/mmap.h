@@ -59,6 +59,7 @@
 /* SYSTEM CONTROL REGISTER */
 #define SYSCTRL_RCC MEM_ADDR(0x40021000)
 #define RCC_APB1ENR MEM_ADDR(0x4002101C) // register to enable I2C
+#define RCC_APB1RSTR MEM_ADDR(0x40021010) // register to reset I2C
 #define RCC_APB2ENR MEM_ADDR(0x40021018) // register to enable USART1
 
 #define SYSCTRL_RIS MEM_ADDR(0x400FE050)

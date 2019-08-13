@@ -30,8 +30,8 @@
 
 #define TIMEOUT 1000
 
-#define DISPLAY_ON 	0x8F
-#define DISPLAY_OFF 	0x11
+#define DOT true
+#define NODOT false
 
 
 /* 
@@ -163,17 +163,20 @@ int delay() {
 		a++;
 }
 
-void set_brightness(uint8_t degree) {
+int delay2() {
 
-	// set pulse!
+	int a = 0;
+	for (int i = 0; i < (TIMEOUT * 150 ); i++)
+		a++;
+}
+
+void set_display(bool on, uint8_t degree) {
+
 	start_condition();
-//	regw_u32(I2C_DR, 0xF0, 0, OWRITE);
-  //      if(!ack10_recv())
-//		cputs("Error: can not set dummy header");
 
 	regw_u32(I2C_DR, 0xF1, 0, OWRITE);
 	if(!ack_recv())
-		cputs("TIMEOUT3!");
+		cputs("Can't switch on display!");
 	stop_condition();
 
 	// reset bus
@@ -182,7 +185,21 @@ void set_brightness(uint8_t degree) {
 }
 
 
-void set_startseg(int offset) {
+void set_segment(int offset, char value, bool dot) {
+
+//	int (ack_recv*)(void) = &ack_recv;
+
+//	if (value & 0x80)
+//	ack_recv = &ack_recv;
+
+	if (offset > 3) {
+		cputs("Offset incorrect");
+	}
+
+	if (dot) {
+		value = value | 0x1;
+	}
+	int start_pos_cmd  = 0x03  | (offset & 0x01) << 7 | (offset & 0x2) << 5 ;
 
 	start_condition();
 	regw_u32(I2C_DR, 0x20, 0, OWRITE); 
@@ -195,140 +212,45 @@ void set_startseg(int offset) {
 		cputs("Error: timeout");
 
 	start_condition();
-	regw_u32(I2C_DR, 0x03, 0, OWRITE); 
+	regw_u32(I2C_DR, start_pos_cmd, 0, OWRITE); 
 	if(!ack_recv())
 		cputs("Error: Can't set start segment \n");
 
 	stop_condition();
 	regw_u32(I2C_CR1, 0x1, 15, SETBIT);
 
+	tm1637_reset();
+
+	start_condition();
+	regw_u32(I2C_DR, value, 0, OWRITE); // use ack10 if higher
+	if(!ack10_recv())
+		cputs("Error: can't set location\n");
+	stop_condition(); 
+
+
+	regw_u32(I2C_CR1, 0x1, 15, SETBIT);
+        //	if(!idle())
+	//	cputs("Error: timeout");
+
+
+	tm1637_reset();
 }
+
 
 
 void tm1637_start() {
 
-unsigned char display_number[10] = {0x00, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE0, 0xFF, 0xF6};
-//	regw_u32(I2C_CR1, 0x1, 8, SETBIT);
-//	uint32_t read_status = *I2C_SR1;
-
-//	regw_u32(I2C_DR, DATASET, 0, OWRITE); 
-	// conform DATA
-//	read_status = *I2C_SR1;
-//	read_status = *I2C_SR2;
+unsigned char display_number[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE0, 0xFE, 0xF6};
 
 
-
-//	start_condition();
-//	//uint32_t statusr = *I2C_SR1; // clear start_signal
-//	regw_u32(I2C_DR, 0x20, 0, OWRITE); // write to address CMD
-//	if(!ack_recv())
-//		cputs("TIMEOUT!");
-//	//statusr = *I2C_SR1;
-//	//statusr = *I2C_SR2;
-//	stop_condition();
-//
-//	//delay();
-
-	set_startseg(0);
-
-	if(!idle())
-		cputs("Error: timeout");
-
-	tm1637_reset();
-
-//	start_condition();
-//	regw_u32(I2C_DR, 0x20, 0, OWRITE); 
-//	if(!ack_recv())
-//		cputs("Error: initiating write command\n");
-//
-//	stop_condition();
-//
-//       	if(!idle())
-//		cputs("Error: timeout");
-
-	start_condition();
-//	regw_u32(I2C_DR, 0xF0, 0, OWRITE); // dummy header F0 ignored! any value will do as long as last bit is not set
-//	if(!ack10_recv())
-//		cputs("Error: dummy addr-10 header not acknowledged\n");
-	regw_u32(I2C_DR, display_number[6], 0, OWRITE); // use ack10 if higher
-	if(!ack10_recv())
-		cputs("Error: can't set location\n");
-//	regw_u32(I2C_DR, 0xF4, 0, OWRITE);
-//	if(!buf_empty())
-//		cputs("Error: can't write\n");
-//	regw_u32(I2C_DR, 0x08, 0, OWRITE);
-//	if(!buf_empty()) 
-//		cputs("Error: can't write\n");
-//	regw_u32(I2C_DR, 0x08, 0, OWRITE);
-//	if(!buf_empty()) 
-//		cputs("Error: can't write\n");
-	stop_condition(); 
-
-
-
-
-	regw_u32(I2C_CR1, 0x1, 15, SETBIT);
-	/*
-	regw_u32(I2C_DR, 0x00, 0, OWRITE); // ？ dummy address
-	if(!ack_recv())
-		cputs("TIMEOUTA");
-	regw_u32(I2C_DR, 0x03, 0, OWRITE);
-	if(!buf_empty())
-		cputs("TIMEOUT2A");
-	regw_u32(I2C_DR, 0xFF, 0, OWRITE);
-	if(!buf_empty())
-		cputs("TIMEOUT2B"); */
-//
-        	if(!idle())
-		cputs("Error: timeout");
-
-
-	tm1637_reset();
-
-	set_brightness(0x00);
+	char love[4]  = { 0x1C, 0xFC, 0x7C, 0x9E };
 	
+	for (int i = 0; i < 4; i++) {
+		set_segment(i, love[i], NODOT);
+	}
 
-/*	delay();
-
-	start_condition();
-	statusr = *I2C_SR1;
-	regw_u32(I2C_DR, DISPLAY_ON, 0, OWRITE);
-	if(!ack_recv())
-		cputs("TIMEOUT4!");
-	stop_condition(); */
-
-
-	/* regw_u32(I2C_CR1, 0x1, 8, SETBIT); //start
-	uint32_t read_status = *I2C_SR1; 
-	regw_u32(I2C_DR, 0x40, 0, OWRITE); // write to address CMD
-	read_status = *I2C_SR1;
-	read_status = *I2C_SR2;
-	regw_u32(I2C_CR1, 0x1, 9, SETBIT); //stop
-	read_status = *I2C_SR1;
-
-	regw_u32(I2C_CR1, 0x1, 8, SETBIT); //start
-	read_status = *I2C_SR1;
-	regw_u32(I2C_DR, 0xC1, 0, OWRITE); // segment address
-	read_status = *I2C_SR1;
-	read_status = *I2C_SR2;
-	regw_u32(I2C_DR, 0x7D, 0, OWRITE); // write a six
-
-	regw_u32(I2C_CR1, 0x1, 9, SETBIT); //stop
-	read_status = *I2C_SR1;
-
-	regw_u32(I2C_CR1, 0x1, 8, SETBIT); //start
-	read_status = *I2C_SR1;
-
-	regw_u32(I2C_DR, DISPLAY_ON, 0, OWRITE);
-	read_status = *I2C_SR1;
-	regw_u32(I2C_CR1, 0x1, 9, SETBIT); //stop */
+	set_display(true, 0);
 
 }
-
-void tm1637_stop() {
-
-	//regw_u32(I2C_CR1, 0x0, 9, SETBIT);
-}
-
 
 

@@ -8,7 +8,7 @@
  * These values are used throughout the code to calculator desired baud
  * rates etc.
  */
-//#define ENABLE_HSE	
+//#define ENABLE_HSE 		
 //efine CRYSTAL_MHZ 	8
 //efine CLKSPEED_MHZ 	72
 extern void clock_init();

@@ -69,10 +69,10 @@ void main()
 	led_init();
 //	eeprom_at24c_init();
 //	eeprom_test();
-//	rtc_init();
+	rtc_init();
 
 	tm1637_init();
-	tm1637_start();
+	tm1637_example();
 
 	//uint32_t test = hextoreg("12345678");
 		

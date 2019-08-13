@@ -30,12 +30,22 @@
 
 #define TIMEOUT 1000
 
-#define DATASET	0x40
-#define CONTROL	0x80
-#define SETADDR	0xC0
-
 #define DISPLAY_ON 	0x8F
 #define DISPLAY_OFF 	0x11
+
+
+/* 
+0 = 0x00
+1 = 0x60
+2 = 0xDA
+3 = 0xF2
+4 = 0x66
+5 = 0xB6
+6 = 0xBE
+7 = 0xE0
+8 = 0xFF
+9 = 0xF6
+*/
 
 /* STM32F1 microcontrollers do not provide the ability to pull-up SDA and SCL lines. Their
 GPIOs must be configured as open-drain. So, you have to add two additional resistors to
@@ -64,6 +74,26 @@ void tm1637_init() {
  regw_u32(I2C_CCR, 0x000A, 0, OWRITE); // standard mode， output 100 kHz (100hz* / perip)
  
  regw_u32(I2C_CR1, 0x1, 0, OWRITE); // enable
+
+}
+
+void tm1637_reset() {
+
+ regw_u32(RCC_APB1RSTR, 0x1, 21, SETBIT);
+
+ regw_u32(RCC_APB1RSTR, 0x00000000, 0, OWRITE); // clr
+ //regw_u32(RCC_APB2ENR, 0x1, 3, SETBIT);
+ // //regw_u8(AFIO_EVCR, 0x89, 0, SETBIT);// set event control register, output on ?
+ 
+ regw_u32(RCC_APB1ENR, 0x1, 21, SETBIT);
+ //regw_u32(GPIOB_CRL, 0xEE444444, 0, OWRITE);
+
+ regw_u32(I2C_CR2, 0x2, 0, OWRITE); //2 MHz 
+ regw_u8(I2C_TRISE, 0x3, 0, OWRITE); // MAX = 1000ns, TPCLK1 = 500ns (+1)
+ regw_u32(I2C_CCR, 0x000A, 0, OWRITE); // standard mode， output 100 kHz (100hz* / perip)
+
+ regw_u32(I2C_CR1, 0x1, 0, OWRITE); // enable
+
 
 }
 
@@ -115,6 +145,17 @@ int ack10_recv() {
 
 }
 
+int idle() {
+	int cnt = 0;
+	while(*I2C_SR2 & 0x2) {
+		cnt++;
+		if (cnt > TIMEOUT)
+			return 0;
+	}
+
+	return 1;
+}
+
 int delay() {
 
 	int a = 0;
@@ -135,11 +176,38 @@ void set_brightness(uint8_t degree) {
 		cputs("TIMEOUT3!");
 	stop_condition();
 
+	// reset bus
+	regw_u32(I2C_CR1, 0x1, 15, SETBIT);
+
+}
+
+
+void set_startseg(int offset) {
+
+	start_condition();
+	regw_u32(I2C_DR, 0x20, 0, OWRITE); 
+	if(!ack_recv())
+		cputs("Error: initiating write for start segment \n");
+
+	stop_condition();
+	
+       	if(!idle())
+		cputs("Error: timeout");
+
+	start_condition();
+	regw_u32(I2C_DR, 0x03, 0, OWRITE); 
+	if(!ack_recv())
+		cputs("Error: Can't set start segment \n");
+
+	stop_condition();
+	regw_u32(I2C_CR1, 0x1, 15, SETBIT);
+
 }
 
 
 void tm1637_start() {
 
+unsigned char display_number[10] = {0x00, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE0, 0xFF, 0xF6};
 //	regw_u32(I2C_CR1, 0x1, 8, SETBIT);
 //	uint32_t read_status = *I2C_SR1;
 
@@ -160,35 +228,47 @@ void tm1637_start() {
 //	stop_condition();
 //
 //	//delay();
-	
-	start_condition();
-	regw_u32(I2C_DR, 0x20, 0, OWRITE); // dummy address
-	if(!ack_recv())
-		cputs("Error: initiating write command\n");
 
-	stop_condition();
-	
-       	delay();
+	set_startseg(0);
+
+	if(!idle())
+		cputs("Error: timeout");
+
+	tm1637_reset();
+
+//	start_condition();
+//	regw_u32(I2C_DR, 0x20, 0, OWRITE); 
+//	if(!ack_recv())
+//		cputs("Error: initiating write command\n");
+//
+//	stop_condition();
+//
+//       	if(!idle())
+//		cputs("Error: timeout");
 
 	start_condition();
-	regw_u32(I2C_DR, 0xF0, 0, OWRITE); // dummy header F0 ignored! any value will do as long as last bit is not set
+//	regw_u32(I2C_DR, 0xF0, 0, OWRITE); // dummy header F0 ignored! any value will do as long as last bit is not set
+//	if(!ack10_recv())
+//		cputs("Error: dummy addr-10 header not acknowledged\n");
+	regw_u32(I2C_DR, display_number[6], 0, OWRITE); // use ack10 if higher
 	if(!ack10_recv())
-		cputs("Error: dummy addr-10 header not acknowledged\n");
-	regw_u32(I2C_DR, 0x04, 0, OWRITE);
-	if(!ack_recv())
 		cputs("Error: can't set location\n");
-	regw_u32(I2C_DR, 0x04, 0, OWRITE);
-	if(!buf_empty())
-		cputs("Error: can't write\n");
-	regw_u32(I2C_DR, 0x08, 0, OWRITE);
-	if(!buf_empty()) 
-		cputs("Error: can't write\n");
-	regw_u32(I2C_DR, 0x08, 0, OWRITE);
-	if(!buf_empty()) 
-		cputs("Error: can't write\n");
-	stop_condition();
+//	regw_u32(I2C_DR, 0xF4, 0, OWRITE);
+//	if(!buf_empty())
+//		cputs("Error: can't write\n");
+//	regw_u32(I2C_DR, 0x08, 0, OWRITE);
+//	if(!buf_empty()) 
+//		cputs("Error: can't write\n");
+//	regw_u32(I2C_DR, 0x08, 0, OWRITE);
+//	if(!buf_empty()) 
+//		cputs("Error: can't write\n");
+	stop_condition(); 
 
-			/*
+
+
+
+	regw_u32(I2C_CR1, 0x1, 15, SETBIT);
+	/*
 	regw_u32(I2C_DR, 0x00, 0, OWRITE); // ？ dummy address
 	if(!ack_recv())
 		cputs("TIMEOUTA");
@@ -199,9 +279,12 @@ void tm1637_start() {
 	if(!buf_empty())
 		cputs("TIMEOUT2B"); */
 //
-//
+        	if(!idle())
+		cputs("Error: timeout");
 
-	delay();
+
+	tm1637_reset();
+
 	set_brightness(0x00);
 	
 

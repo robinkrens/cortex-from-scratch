@@ -119,28 +119,27 @@ static int buf_empty() {
         return 1;
 }
 
+/* Wait for an acknowledge from the peripheral */
 int ack_recv() {
-
 	int cnt = 0;
 	while(!(*I2C_SR1 & 0x2)) {
 		cnt++;
 		if (cnt > TIMEOUT)
 			return 0;
 	}
-	uint32_t a = *I2C_SR2;
+	uint32_t a = *I2C_SR2; // need to read SR2 register!
 	return 1;
 
 }
 
+/* Similar, but SR2 register is not read */
 int ack10_recv() {
-
 	int cnt = 0;
 	while(!(*I2C_SR1 & 0x8)) {
 		cnt++;
 		if (cnt > TIMEOUT)
 			return 0;
 	}
-	//uint32_t a = *I2C_SR2;
 	return 1;
 
 }
@@ -163,13 +162,6 @@ int delay() {
 		a++;
 }
 
-int delay2() {
-
-	int a = 0;
-	for (int i = 0; i < (TIMEOUT * 150 ); i++)
-		a++;
-}
-
 void set_display(bool on, uint8_t degree) {
 
 	start_condition();
@@ -187,10 +179,8 @@ void set_display(bool on, uint8_t degree) {
 
 void set_segment(int offset, char value, bool dot) {
 
-//	int (ack_recv*)(void) = &ack_recv;
+	int (*ack)() = ack_recv; /* Scary function pointer :D */
 
-//	if (value & 0x80)
-//	ack_recv = &ack_recv;
 
 	if (offset > 3) {
 		cputs("Offset incorrect");
@@ -211,9 +201,10 @@ void set_segment(int offset, char value, bool dot) {
        	if(!idle())
 		cputs("Error: timeout");
 
+
 	start_condition();
 	regw_u32(I2C_DR, start_pos_cmd, 0, OWRITE); 
-	if(!ack_recv())
+	if(!ack())
 		cputs("Error: Can't set start segment \n");
 
 	stop_condition();
@@ -221,17 +212,17 @@ void set_segment(int offset, char value, bool dot) {
 
 	tm1637_reset();
 
+//	if (value & 0xF0)
+//		ack = &ack10_recv;
+
 	start_condition();
 	regw_u32(I2C_DR, value, 0, OWRITE); // use ack10 if higher
-	if(!ack10_recv())
+	if(!ack_recv())
 		cputs("Error: can't set location\n");
 	stop_condition(); 
 
 
 	regw_u32(I2C_CR1, 0x1, 15, SETBIT);
-        //	if(!idle())
-	//	cputs("Error: timeout");
-
 
 	tm1637_reset();
 }

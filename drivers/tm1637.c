@@ -84,7 +84,6 @@ void tm1637_reset() {
  * grid. Grid 1 an 2 have an additional dot that can be set */
 int set_grid(uint8_t offset, char value, bool dot) {
 
-	//int (*ack)() = ack_recv; /* Scary function pointer :D */
 
 	if (offset > 3) {
 		printf("Offset incorrect");
@@ -118,13 +117,21 @@ int set_grid(uint8_t offset, char value, bool dot) {
 
 	tm1637_reset();
 
+
+	int (*ack)() = &ack_recv;
+        if ((((value >> 4) & 0xF) == 0xF ) && !(value & 0x08)) {
+		ack = &ack10_recv;
+	}
+	
 	/* Write value to segments */
 	start_condition();
 	rwrite(I2C_DR, value);
-	if(!ack_recv())
-		return -1;
-	stop_condition(); 
+	if(!ack()) {
+	//	return -1;
+	}
 
+	stop_condition(); 
+	delay(); // wait for the chip to finish writing
 	tm1637_reset();
 
 	return 0;
@@ -145,26 +152,19 @@ int set_display(bool on, uint8_t degree) {
 		return -1;
 	}
 	stop_condition();
-
 	tm1637_reset();
 
 	return 0;
-
 }
-
 
 void tm1637_example() {
 
-unsigned char display_number[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE0, 0xFE, 0xF6};
-
-
+	unsigned char dn[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE0, 0xFE, 0xF6};
 	char love[4]  = { 0x1C, 0xFC, 0x7C, 0x9E };
-	
+		
 	for (int i = 0; i < 4; i++) {
 		set_grid(i, love[i], NODOT);
 	}
-
-	set_display(true, 0);
 
 }
 
@@ -206,6 +206,14 @@ int ack10_recv() {
 	return 1;
 
 }
+
+/* Write delay chip */
+static void delay() {
+        int a = 0;
+        for (int i = 0; i < 500; i++)
+                a++;
+}
+
 
 /* Check if lines are idle (i.e. stop condition finished)*/
 int idle() {

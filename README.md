@@ -12,7 +12,7 @@ The board I use is a cheap Chinese STM32F103 ripoff. In theory, you should be ab
 port this code to any Cortex M0/M3/M4/M7 board. 
 
 ## PROGRESS STATUS
-* Setup bare development environment [COMPLETED] --FILES: Makefile, link.d
+* Setup bare development environment [COMPLETED] -- FILES: Makefile, link.d
 * Boot and jump to C [COMPLETED] -- FILES: start.asm, main.c, include/sys/mmap.h, include/sys/robsys.h 
 * Interrupt Handling [COMPLETED] -- FILES: ivt.c, lib/string.c
 * Basic input and output (UART) [COMPLETED] -- FILES: driver/uart.c, lib/stdio.c
@@ -23,12 +23,12 @@ port this code to any Cortex M0/M3/M4/M7 board.
 * Built-in-shell [COMPLETED] -- FILE: term.c
 * Port printf/libc library [COMPLETED] -- FILE: lib/tinyprintf.c
 * Basic drivers:
-	** EEPROM: driver/at24c.c [COMPLETED]
-	** UART drivers/uart.c [COMPLETED]
-	** LED segment display: drivers/tm1637.c [COMPLETED]
-	** Temperature sensor: drivers/tsensor.c [IN PROGRESS]
-	** OLED display [PLANNED]
-	** Joystick [PLANNED]
+	* EEPROM: drivers/at24c.c [COMPLETED]
+	* UART drivers/uart.c [COMPLETED]
+	* LED segment display: drivers/tm1637.c [COMPLETED]
+	* Temperature sensor: drivers/tsensor.c [IN PROGRESS]
+	* OLED display [PLANNED]
+	* Joystick [PLANNED]
 * Memory Management [IN PROGRESS] -- FILE: lib/pool.c
 * User Mode [PLANNED]
 * System Call PendV implementation [PLANNED]

@@ -1,3 +1,14 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/8/14 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * Small terminal with some built-in debug commands
+ * 
+ * */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -18,15 +29,14 @@
 #define WHITESPACE "\t\r\n "
 #define BUILTINCMDS 4
 
-int help(int, char**);
-
 /* 
  * Built in commands
  * 	info -- shows basic info of system
  * 	uptime -- uptime; read from the RTC register
  * 	reset -- software reset TODO
- * 	show [ADDRESS-ADDRESS] -- shows SRAM range
- * 	switchmode -- switch to unprivileged mode
+ * 	showmem xxxxxxxx -- shows address value
+ * 	led -- led on/off
+ * 	switchmode -- switch to unprivileged mode TODO
  * */
 
 static char buf[BUFSIZE];
@@ -37,7 +47,7 @@ struct cmd {
 	int (*function)(int argc, char ** argsv);
 };
 
-struct cmd builtincmds[4];
+struct cmd builtincmds[BUILTINCMDS];
 
 int info(int argc, char ** argsv) {
 	sysinfo();
@@ -45,38 +55,30 @@ int info(int argc, char ** argsv) {
 }
 
 int uptime(int arg, char ** argsv) {
-	//cputs("CURRENT UPTIME: ");
-	//cputs(regtohex(*RTC_CNTL));
-	//cputchar('\n');
-	printf("CURRENT UPTIME: %p\n", *RTC_CNTL);
+	printf("CURRENT UPTIME: %d seconds \n", *RTC_CNTL);
 }
 
 int led(int argc, char ** argsv) {
 
-
 	if (argsv[1] != NULL) {
 		if (strcmp(argsv[1], "on")) {
-			cputs("LED ON\n");
+			printf("LED ON\n");
 			led_on();
 			}
 		else if (strcmp(argsv[1], "off")) {
-			cputs("LED OFF\n");
+			printf("LED OFF\n");
 			led_off();
 			}
 	}
 	return 0;
 }
 
-int show(int argc, char ** argsv) {
+int showmem(int argc, char ** argsv) {
 
 	if ((argsv[1] != NULL) && (strlen(argsv[1]) == 8)) {
 	
 		uint32_t * check = (uint32_t *) hextoreg(argsv[1]);
-		cputs("REGISTER 0x");
-		cputs(argsv[1]);
-		cputs(" VALUE: ");
-		cputs(regtohex(*check));
-		cputchar('\n');
+		printf("LOCATION 0x%s, VALUE: %#x\n", argsv[1], *check);
 		return 1;
 	
 	}
@@ -102,7 +104,7 @@ int exec_cmd(char * buf) {
 
 		// save and scan past next arg
 		if (argc == MAXARGS-1) {
-			cputs("Too many arguments");
+			printf("Too many arguments\n");
 			return 0;
 		}
 		argv[argc++] = buf;
@@ -118,7 +120,7 @@ int exec_cmd(char * buf) {
 		if (strcmp(argv[0], builtincmds[i].name))
 			return builtincmds[i].function(argc, argv);
 	}
-	cputs("Unknown command");
+	printf("Unknown command\n");
 	return 0;
 
 } 
@@ -131,15 +133,14 @@ void terminal() {
 	builtincmds[1].name = "led";
 	builtincmds[1].function = led;
 
-	builtincmds[2].name = "show";
-	builtincmds[2].function = show;
+	builtincmds[2].name = "showmem";
+	builtincmds[2].function = showmem;
 
 	builtincmds[3].name = "uptime";
 	builtincmds[3].function = uptime;
 
 
 	char *buf;
-        //cputs("WELCOME TO ROBSYS!\n");
  
          while (1) {
                  buf = readline("root# ");

@@ -1,3 +1,17 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/23 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * The 'classic' putc and getchar functions. Should not be used directly
+ * use the tinyprintf library instead
+ *
+ * Can be extended for multiple interfaces (serial, tft or oled screens)
+ *
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

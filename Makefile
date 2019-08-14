@@ -10,11 +10,11 @@ AS=arm-none-eabi-as
 MKIMG=arm-none-eabi-objcopy
 
 # Compiler flags
-# TODO:Cortex-m3 or Cortex-m0?
 LDFLAGS+= -mthumb -mcpu=cortex-m3 
 ASFLAGS+= -mcpu=cortex-m3 -mthumb -g
 CFLAGS+= -mcpu=cortex-m3 -mthumb -g -ffreestanding 
 
+# Include directory
 INCLUDE+= -Iinclude 
 
 BIN = bin

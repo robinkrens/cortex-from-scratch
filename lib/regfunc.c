@@ -1,3 +1,14 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/20 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * Helper functions to set registers 
+ *
+ * */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -24,6 +35,7 @@ void rclrbit(volatile uint32_t * reg, short pos) {
 	*reg = *reg & ~(0x1 << pos);
 }
 
+// check if a bit is set 
 int rchkbit(volatile uint32_t * reg, short pos) {
 	if ((*reg >> pos) & 0x1)
 		return 1;
@@ -36,7 +48,7 @@ void rwrite(volatile uint32_t * reg, uint32_t val) {
 }
 
 
-/* write value (uint8_t) to register */
+/* DEPRECATED write value (uint8_t) to register 
 void regw_u8(volatile uint32_t * reg, uint8_t val, short shift, short flag) {
 
 	switch(flag) {
@@ -50,9 +62,9 @@ void regw_u8(volatile uint32_t * reg, uint8_t val, short shift, short flag) {
 			*reg = *reg & ~(val << shift);
 			break;
 	}
-}
+} */
 
-/* write value (uint32_t) to register */
+/* DEPRECATED write value (uint32_t) to register 
 void regw_u32(volatile uint32_t * reg, uint32_t val, short shift, short flag) {
 
 	switch(flag) {
@@ -66,11 +78,9 @@ void regw_u32(volatile uint32_t * reg, uint32_t val, short shift, short flag) {
 			*reg = *reg & ~(val << shift);
 			break;
 	}
-}
+} */
 
-/* Print out the hexidecimal representation of an integer
-   After implementation of scanf or sth this will be obsolete.  */
-
+/* Deprecated use printf instead
 char hexbuf[8];
 char * regtohex(uint32_t addr) {
 	char tmpbuf[6] = {'A', 'B', 'C', 'D', 'E', 'F'};
@@ -89,7 +99,9 @@ char * regtohex(uint32_t addr) {
 		}
 	}
 	return &hexbuf[0];	
-}
+} */
+
+// TODO: implement simple scanf functions
 int singlehextoreg(char  hex) {
 
 	int conv = 0;

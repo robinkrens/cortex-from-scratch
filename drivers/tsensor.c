@@ -2,10 +2,11 @@
  * 
  * $LOG$
  * 2019/8/4 - ROBIN KRENS	
- * Initial version 
+ * PreInitial version 
  * 
  * $DESCRIPTION$
- * Temperature sensor
+ * Temperature sensor 
+ * [in dev]
  *
  * */
 
@@ -29,7 +30,7 @@ bool s1, s2;
 
  void * update_handler() {
 
-	s1 = false;
+/*	s1 = false;
 	s2 = false;
 	ccr1 = 0xFFFFFFFF;
        	ccr2 = 0xFFFFFFFF;
@@ -74,7 +75,7 @@ bool s1, s2;
 		printf("EDGE UP\n");
 
 	s1 = false;
-	s2 = false;
+	s2 = false; */
 }
 
 static void reset() {

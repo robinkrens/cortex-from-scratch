@@ -113,7 +113,6 @@ __attribute__ ((interrupt))
 void * dummy_isr( struct interrupt_frame * frame ) {
 
 	uint8_t nr = *SCB_VTOR_ST & 0xFF;
-	//printf("PC:%p\n",frame->lr);
 	printf("EXCEPTION: %s\n", exception_message(nr));
 	printf("STACK TRACE:\n");
 	printf("R0:%p\n",frame->r0);
@@ -149,6 +148,6 @@ void ivt_init() {
 	 * relocated to other memory locations. We can do this by setting 
 	 * a register in the NVIC called the vector table offset register */
 
-	regw_u32(SCB_VTOR, (uint32_t) &ivt, 0, OWRITE);
+	rwrite(SCB_VTOR, (uint32_t) &ivt);
 
 }

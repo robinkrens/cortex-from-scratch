@@ -1,10 +1,20 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/20 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * Re-implementation of POSIX String functions
+ *
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <lib/string.h> 
 
-// TODO: add more
 void *memcpy(void *dest, void *src, size_t count)
 {   
     const char *sp = (const char *)src;

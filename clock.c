@@ -5,7 +5,7 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- * 1. Routines to setup the high speed external (HSE) clock. 
+ * Routines to setup the high speed external (HSE) clock. 
  * Initially a (less accurate) high speed internal (HSI) 
  * clock is used. PPL is enabled; HSE is input for PPL.
  * PPL is multiplied to get the desired clock speed. 

@@ -46,18 +46,15 @@ void * rtc_handler() {
     	grid2 = ((cntvalue % 1000) - grid0 - grid1) / 100;
         grid3 = ((cntvalue % 10000) - grid0 - grid1 - grid2) / 1000;
 
-	printf("%d, %d, %d, %d\n", grid0, grid1, grid2, grid3);
-	
+	//printf("%d, %d, %d, %d\n", grid0, grid1, grid2, grid3);
 	
 	char current[4] = { dn[grid3], dn[grid2], dn[grid1], dn[grid0] }; 
 
-	//char current[4] = { dn[1], dn[1], dn[1], dn[1] };
 	for (int i = 0; i < 4; i++) {
 		set_grid(i, current[i], false);
 	}
 
 	set_display(true, 0); 
-	
 	}
 
 	// Simple LED blink 

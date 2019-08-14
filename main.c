@@ -5,7 +5,7 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- * Main intialize basic components of the boards
+ * Main initialize basic components of the board
  * and jumps to a terminal
  *
  * */
@@ -24,77 +24,50 @@
 #include <drivers/uart.h>
 #include <drivers/led.h>
 #include <drivers/tm1637.h>
-#include <drivers/at24c.h>
+//#include <drivers/at24c.h>
 #include <drivers/tsensor.h>
-
-//void sleep() {
-//
-//	__asm__ __volatile__("wfe");
-//
-//}
 
 void main()
 {
+
+	/* Initialize the clock system, */
 	clock_init();
+
+	/* Setup the interrupt vector table */
 	ivt_init();
+
+	/* Initialze basic input and output over serial */
 	uart_init();
-//	cputs("ROBSYS LOADING...\n");
-	//systick_init();
-//	tsensor_output(0xFFFF, 0x7FFF);
 
+	/* Cortex M* integrated systick, can be replaced
+	 * by the more accurate RTC.
+	systick_init();
+	*/
+
+	/* Set up a very small libc library */
 	init_printf(NULL, putc);
-	// SPEED_TEST
-/*	cputs("START TEST (8MHz) \n");
-	int a;
-	for (int i = 0; i < 20000000; i++) {
-		a + 2;	
-	}
-	a = 0;
-	cputs("END TEST\n");
-	
-	//! 
-	clock_init();
 
-	cputs("START TEST (??MHz) \n");
-	for (int i = 0; i < 20000000; i++) {
-		a + 2;	
-	}
-	cputs("END TEST\n"); */
+	/* Display some basic info at startup */
 	sysinfo();
 
-
-//	tsensor_input(5000);
-//	run();
-
+	/* On board LEDs*/
 	led_init();
-//	eeprom_at24c_init();
-//	eeprom_test();
-	tm1637_init();
 
+	/* Real time clock */
 	rtc_init();
 
+	/* Eeprom Driver
+	eeprom_at24c_init();
+	eeprom_test();
+	*/
+	
+	/* LED Segment Driver */
+	tm1637_init();
 
-	//uint32_t test = hextoreg("12345678");
-		
-//	cputs(regtohex(test));
-
-	//extern void stub();
-	//stub();
-	//__asm__ __volatile__ ("ldc p1, cr1, r0");
-
-/* 	while(1) {
-		int r;
-		for (int i = 0; i < 50000; i++) {
-			r = 0;	
-		}
-		led_on();
-		for (int i = 0; i < 50000; i++) {
-			r = 0;	
-		}
-		led_off();
-	} */
+	/* Start up terminal */
 	terminal();
 
+	/* Should not be here, endless loop */
 	for(;;) {
 
  	}

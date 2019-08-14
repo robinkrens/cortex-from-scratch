@@ -1,6 +1,9 @@
 #ifndef __TM1637_H
 #define __TM1637_H
 
+#define DOT	true
+#define NODOT	false
+
 /* HELPER SUBROUTINES DECLARATIONS */
 static void start_condition();
 static void stop_condition();

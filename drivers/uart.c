@@ -70,10 +70,10 @@ void uart_putc(unsigned char ch) {
 	
   	if (ch == '\n') {
 		while(!rchkbit(USART1_SR, 6));
-		regw_u8(USART1_DR, 0x0D, 0, OWRITE); // return line
+		rwrite(USART1_DR, 0x0D); // return line
 	}
 		while(!rchkbit(USART1_SR, 6));
-		regw_u8(USART1_DR, ch, 0, OWRITE);
+		rwrite(USART1_DR, ch);
 }
 
 char uart_getc(void) {
@@ -99,13 +99,10 @@ char uart_getc(void) {
 	
 void set_baudrate() {
 
-//	rwrite(USART1_BRR, 0x000001A1); 48 MHZ
-//	rwrite(USART1_BRR, 0x0000022B); 64 MHz
-//	rwrite(USART1_BRR, 0x00000138); 36 MHz
 //	rwrite(USART1_BRR, 0x00000271); 72 MHz
 #ifdef ENABLE_HSE
-	rwrite(USART1_BRR, 0x00000138);
+	rwrite(USART1_BRR, 0x00000138); // 36 MHz
 #else
-	rwrite(USART1_BRR, 0x00000045);
+	rwrite(USART1_BRR, 0x00000045); // 8 Mhz 
 #endif
 }

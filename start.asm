@@ -5,8 +5,10 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- *
- * */
+ */
+
+/* _start sets up the stack and jumps to the reset vector */
+
 	.equ STACK_TOP, 0x20010000 /* placed at 64kB, top of SRAM */
 	.text
 	.global _start
@@ -34,14 +36,6 @@ nmi:
 
 hardfault: 
 	b hardfault
-.global stub
-stub:
-	ldr R0,=10
-	mov R1,#0
-	ldc2 11, cr0, [r1, #4]
-	udiv.w R2, R0, R1 
-
-	.data
-	.word 'x' 
+	
 	.end
 

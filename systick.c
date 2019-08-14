@@ -1,3 +1,16 @@
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/8/14 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * SysTick of Cortex M* MCUs. Have a look at the more complex RTC 
+ * in case more accurate timing is needed.
+ *
+ * 
+ * */
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -6,7 +19,7 @@
 #include <sys/mmap.h>
 
 #include <lib/regfunc.h>
-#include <lib/stdio.h>
+#include <lib/tinyprintf.h>
 
 struct interrupt_frame {
 
@@ -23,15 +36,14 @@ struct interrupt_frame {
 //__attribute__ ((interrupt))
 void * systick_handler(/* struct interrupt_frame * frame */) {
 
-//	cputs("TICKING\n");
-//	for(;;);
+	printf("Ticking...\n");
 }
 
 
 void systick_init() {
 
 	/* Every time the counter counts down to zero
-	 * a systick exception is asserted. Systick has
+	 * a systick exception is invoked. Systick has
 	 * exception number 15. in the vector table  */
 	ivt_set_gate(15, systick_handler, 0); 
 

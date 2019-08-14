@@ -2,7 +2,9 @@
  * 
  * $LOG$
  * 2019/7/20 - ROBIN KRENS	
- * Initial version 
+ * Initial version
+ * Display some system information, calculate
+ * the amount of SRAM available 
  * 
  * */
 
@@ -50,18 +52,12 @@ void sysinfo() {
 	
 	uint32_t current_stack = get_msp();
 	uint32_t stack_usage = (SRAM_OFFSET + SRAM_SIZE) - current_stack;
-	uint32_t data_bss = &_endofbss - SRAM_OFFSET;
+	uint32_t data_bss = (uint32_t) &_endofbss - SRAM_OFFSET;
 	uint32_t mem_free = SRAM_SIZE - stack_usage - data_bss;
 
 	printf("# TOTAL MEMORY: %#x\n", SRAM_SIZE);
-//	cputs(regtohex(SRAM_SIZE));
-//	cputchar('\n');
 	printf("# FREE MEMORY: %#x\n", mem_free);
-//	cputs(regtohex(mem_free));
-//	cputchar('\n');
 	printf("# STACK USAGE: %#x\n", stack_usage);
-//	cputs(regtohex(stack_usage));
-//	cputchar('\n');
 
 }
 

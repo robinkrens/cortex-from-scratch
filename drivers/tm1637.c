@@ -37,9 +37,6 @@
 
 #define TIMEOUT 5000
 
-#define DOT true
-#define NODOT false
-
 #define WRITE_CMD 0x20
 
 /* STM32F1 microcontrollers do not provide the ability to pull-up SDA and SCL lines. Their

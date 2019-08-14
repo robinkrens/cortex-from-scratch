@@ -1,4 +1,26 @@
-/* */
+/* (CC-BY-NC-SA) ROBIN KRENS - ROBIN @ ROBINKRENS.NL
+ * 
+ * $LOG$
+ * 2019/7/20 - ROBIN KRENS	
+ * Initial version 
+ * 
+ * $DESCRIPTION$
+ * Linker file for Cortex-M3 STM32 based boards
+ * Boards have similar FLASH and SRAM ORIGINs
+ * LENGTHs differs of course.
+ * 
+ * _start flag is the first procedure to be 
+ * executed (linked to beginning of FLASH at 
+ * 0x08000000). The procedure should do some
+ * basic things, such as set up the stack and
+ * reset and hard fault handler (see start.asm)
+ * *
+ * _endofbss flag is used to calculate the end 
+ * of .bss and the start of (a possible) kernel
+ * heap
+ *
+ * */
+
 MEMORY
 {
 	FLASH (xr) : ORIGIN = 0x08000000, LENGTH = 512K

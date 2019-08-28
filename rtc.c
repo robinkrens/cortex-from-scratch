@@ -34,7 +34,7 @@
 void * rtc_handler() {
 
 	// Real time clock output on a LED display 
-	int cntvalue = *RTC_CNTL;
+	/* int cntvalue = *RTC_CNTL;
 	if (cntvalue < 9999) {
 
 	unsigned char dn[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE0, 0xFE, 0xF6};
@@ -55,12 +55,12 @@ void * rtc_handler() {
 	}
 
 	set_display(true, 0); 
-	}
+	} */
 
 	// Simple LED blink 
-	//uint32_t curr = *RTC_CNTL;
-	//int even = *RTC_CNTL % 2;
-	//(!even) ? led_off() : led_on();
+	uint32_t curr = *RTC_CNTL;
+	int even = *RTC_CNTL % 2;
+	(!even) ? led_off() : led_on();
 
 	rclrbit(RTC_CRL, 0); /* clear interrupt flag */
 }

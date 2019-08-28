@@ -62,7 +62,10 @@ void main()
 	*/
 	
 	/* LED Segment Driver */
-	tm1637_init();
+	//tm1637_init();
+	
+	/* TEMP SENSOR */
+	run();
 
 	/* Start up terminal */
 	terminal();

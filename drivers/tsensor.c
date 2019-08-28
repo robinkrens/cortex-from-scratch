@@ -23,7 +23,7 @@
 
 #include <drivers/tsensor.h>
 
-#define PRESCALER 36000 // 1 Mhz
+#define PRESCALER 8000 // 1 kHz
 
 int *ccr1, *ccr2, *ccr1b, *ccr2b;
 bool s1, s2;
@@ -107,6 +107,23 @@ void * cnt_complete_handler() {
 	tsensor_input(0xFFFF);
 }
 
+int cnt;
+
+void * bare_handler() {
+	cnt += 1;
+	printf("Count event %d\n", cnt);
+	int switchled = cnt % 2;
+	if (switchled) {
+		printf("setting low\n");
+		rclrbit(GPIOB_ODR, 6); // low
+	}
+	else {
+		printf("setting high\n");
+		rsetbit(GPIOB_ODR, 6); // high
+	}
+	rclrbit(TIM4_SR1, 0);
+}
+
 
 void tsensor_simple(uint16_t preload) {
 	
@@ -120,10 +137,10 @@ void tsensor_simple(uint16_t preload) {
 	rwrite(TIM4_ARR, preload);
 	rsetbit(TIM4_EGR, 0);
 	
-	ivt_set_gate(46, cnt_complete_handler, 0);
+	ivt_set_gate(46, bare_handler, 0);
 	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
 
-	rsetbit(GPIOB_BSRR, 22); // 
+	rsetbit(GPIOB_ODR, 6); // 
 	rsetbit(TIM4_DIER, 0);
 	rsetbit(TIM4_CR1, 0);
 
@@ -131,11 +148,14 @@ void tsensor_simple(uint16_t preload) {
 
 void run() {
 
+	cnt = 0;
 	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
-	rwrite(GPIOB_CRL, 0x47444444); // open drain general
+	rwrite(GPIOB_CRL, 0x42444444); //  open drain general for sensor?
 
 	rsetbit(GPIOB_BSRR, 22); // high
-	tsensor_simple(2000);
+
+	tsensor_simple(4000); // 2 second?
+
 //	tsensor_output(580, 520);
 //	reset();
 //	tsensor_simple(580);

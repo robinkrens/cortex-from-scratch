@@ -110,6 +110,18 @@ void * cnt_complete_handler() {
 int cnt;
 
 void * bare_handler() {
+
+//w2	cnt += 1;
+//w2	printf("CHECKING STATUS\n");
+//w2
+//w2	if(rchkbit(GPIOB_IDR, 6)) {
+//w2		printf("port high\n");
+//w2	}
+//w2	else {
+//w2		printf("port low\n");
+//w2	}
+	
+
 	cnt += 1;
 	printf("Count event %d\n", cnt);
 	int switchled = cnt % 2;
@@ -140,7 +152,7 @@ void tsensor_simple(uint16_t preload) {
 	ivt_set_gate(46, bare_handler, 0);
 	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
 
-	rsetbit(GPIOB_ODR, 6); // 
+//w	rsetbit(GPIOB_ODR, 6); // 
 	rsetbit(TIM4_DIER, 0);
 	rsetbit(TIM4_CR1, 0);
 
@@ -148,11 +160,16 @@ void tsensor_simple(uint16_t preload) {
 
 void run() {
 
+//w2	cnt = 0;
+//w2	rsetbit(RCC_APB2ENR, 3);
+//w2	rwrite(GPIOB_CRL, 0x48444444); // input with pull up down
+//w2	tsensor_simple(5000); 
+
 	cnt = 0;
 	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
-	rwrite(GPIOB_CRL, 0x42444444); //  open drain general for sensor?
+	rwrite(GPIOB_CRL, 0x46444444); //  open drain general for sensor?
 
-	rsetbit(GPIOB_BSRR, 22); // high
+	rsetbit(GPIOB_BSRR, 22); // low (<- reset) 
 
 	tsensor_simple(4000); // 2 second?
 

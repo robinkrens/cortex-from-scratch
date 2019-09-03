@@ -6,6 +6,7 @@ extern void rclrbit(volatile uint32_t *, short);
 extern void rsetbitsfrom(volatile uint32_t *, short, int);
 extern int rchkbit(volatile uint32_t *, short);
 extern void rwrite(volatile uint32_t *, uint32_t);
+extern void _block(uint16_t us);
 
 /* DEPRECATED 
  * extern void regw_u8(volatile uint32_t *, uint8_t, short, short);

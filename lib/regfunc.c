@@ -17,8 +17,10 @@
 #include <lib/string.h>
 #include <lib/stdio.h>
 
-#include <sys/mmap.h>
+#include <lib/tinyprintf.h>
 
+#include <sys/mmap.h>
+#include <sys/robsys.h>
 
 // register set bit at position
 void rsetbit(volatile uint32_t * reg, short pos) {
@@ -47,38 +49,6 @@ void rwrite(volatile uint32_t * reg, uint32_t val) {
 	*reg = val;
 }
 
-
-/* DEPRECATED write value (uint8_t) to register 
-void regw_u8(volatile uint32_t * reg, uint8_t val, short shift, short flag) {
-
-	switch(flag) {
-		case OWRITE:
-			*reg = (val << shift);
-			break;
-		case SETBIT:
-			*reg = *reg | (val << shift);
-			break;
-		case CLRBIT:
-			*reg = *reg & ~(val << shift);
-			break;
-	}
-} */
-
-/* DEPRECATED write value (uint32_t) to register 
-void regw_u32(volatile uint32_t * reg, uint32_t val, short shift, short flag) {
-
-	switch(flag) {
-		case OWRITE:
-			*reg = (val << shift);
-			break;
-		case SETBIT:
-			*reg = *reg | (val << shift);
-			break;
-		case CLRBIT:
-			*reg = *reg & ~(val << shift);
-			break;
-	}
-} */
 
 /* Deprecated use printf instead
 char hexbuf[8];
@@ -124,6 +94,29 @@ uint32_t hextoreg(char * a) {
 	 	x += tmp << (28 - (i * 4));
 	}
 	return x;
+
+}
+
+/* Busy-loop block implementation. Each iteration will take 3 CPU cycles.
+ * Of course, when interrupts are enabled, the exact delay time will be 
+ * uncertain. 
+ *
+ * Example: for a standard STM32x config board (8MHz) the maximum delay is
+ * 0xFFFF * (1/8,000,000) * 3 = 24.58ms 
+ * */
+static void __block(uint16_t count) {
+
+	asm volatile("b1: subs %0, %1, #1" "\n\t"
+		"bne b1" : "=r" (count) : "r" (count));
+}
+
+/* Delay us microsecond
+ * Note: delay includes setup time (about 4 clockcycles), so is quite
+ * inaccurate  */
+void _block(uint16_t us) {
+	
+	uint16_t count = (us/3) * CLKSPEED_MHZ; // x cycles 
+	__block(count);
 
 }
 

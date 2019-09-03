@@ -22,11 +22,11 @@
 
 #include <drivers/tsensor.h>
 
-#define PRESCALER 0xFFFF // 1 MHz (1 microsecond)
+#define PRESCALER 8 // 1 MHz (1 microsecond)
 #define MAXBUF 10
 
 int cnt;
-enum status { INIT, WAIT_INIT, INIT_DONE } init_status;
+enum status { INIT, WAIT_INIT, INIT_DONE } current_status;
 enum rstatus { READ, READ_INIT, READ_DONE } read_status;
 
 static struct {
@@ -56,7 +56,7 @@ static void timer_config(uint16_t preload) {
 	rsetbit(TIM4_EGR, 0);
 }
 
-/* static void presence_pulse_conf() {
+static void presence_pulse_conf() {
 
 	current_status = INIT;
 	out_conf();
@@ -68,40 +68,24 @@ static void presence_reply_conf() {
 
 	current_status = WAIT_INIT;
 	in_conf();
-	timer_config(100); // > 60 us
+	timer_config(60); // > 60 us
 }
 
 static void finish_init() {
-	current_status = INIT_FINISH;
+	current_status = INIT_DONE;
 	timer_config(480);
-} */
-
-/* static void terminate() {
-//	current_status = NULL;
-	in_conf();
-	rclrbit(TIM4_DIER, 0);
-	rclrbit(TIM4_CR1, 0);
-} */
-
-
-/* void tsensor_cmd_init() {
-	current_status = WRITE;
-	out_conf();
-	timer_config(60);
-	//rsetbit(TIM4_DIER, 0);
-	//rsetbit(TIM4_CR1, 0); // start
-} */
-
-void write0() {
-	out_conf();
-	rclrbit(GPIOB_ODR, 6); // low
-	timer_config(60);
-}
-
+} 
 
 /* Handlers for read, write and init pulses */
 
 void * write_handler() {
+
+
+
+	// i
+	// in_conf();
+
+
 
 	rclrbit(TIM4_SR1, 0);
 	rclrbit(TIM4_SR1, 1);
@@ -109,13 +93,13 @@ void * write_handler() {
 	
 		if ((sensor_cmd.cmd >> sensor_cmd.pos+1) & 0x01) {
 			printf("1\n");
-			rwrite(TIM4_CCR1, 150);
+			rwrite(TIM4_CCR1, 5);
 			rsetbit(TIM4_EGR, 0);
 		}
 			
 		else {
 			printf("0");
-			rwrite(TIM4_CCR1, 600);
+			rwrite(TIM4_CCR1, 60);
 			rsetbit(TIM4_EGR, 0);
 	
 		}
@@ -130,6 +114,12 @@ void * write_handler() {
 
 void * reply_handler() {
 
+
+	cnt++;
+	if (cnt > 16) {
+		for(;;);
+	}
+
 	rclrbit(TIM4_SR1, 0);
 	rclrbit(TIM4_SR1, 1);
 	switch(read_status) {
@@ -138,15 +128,16 @@ void * reply_handler() {
 			read_status = READ;
 			rsetbit(GPIOB_BSRR, 22); // low (<- reset) 
 			if (rchkbit(GPIOB_IDR, 6)) {
-					printf("high");
+					printf("h\n");
 			}
 			else {
-				printf("low");
+				printf("l\n");
 			}
-			timer_config(600);
+			timer_config(60);
 			break;
 		case(READ):
 			out_conf();
+			rclrbit(GPIOB_ODR, 6); // low
 			read_status = READ_INIT;
 			timer_config(1);
 			break;
@@ -199,15 +190,15 @@ void write_init() {
 	rwrite(GPIOB_CRL, 0x4A444444);
 	
 
-	timer_config(610);	
+	timer_config(61);	
 
 	if ((sensor_cmd.cmd >> sensor_cmd.pos) & 0x01) {
 		printf("1\n");
-		rwrite(TIM4_CCR1, 150);
+		rwrite(TIM4_CCR1, 5); // < 15ms
 	}
 	else {
 		printf("0\n");
-		rwrite(TIM4_CCR1, 600);
+		rwrite(TIM4_CCR1, 60);
 	}
 
 	rsetbitsfrom(TIM4_CCMR1, 4, 0x6); // forced high on match
@@ -226,7 +217,7 @@ void write_init() {
 }
 
 
-/* void * init_handler() {
+void * init_handler() {
 
 	switch(current_status) {
 			case (INIT):
@@ -243,25 +234,9 @@ void write_init() {
 				finish_init();
 				break;
 
-			case (INIT_FINISH): 
+			case (INIT_DONE): 
 				printf("M: fin\n");
-				tsensor_cmd_init();
-				break;
-
-			case (WRITE):
-				printf("M: write\n");
-				if (sensor_cmd.pos > 7)
-					terminate();
-				else {
-					if ((sensor_cmd.cmd >> sensor_cmd.pos) & 0x01) {
-
-						printf("1\n");
-					}
-					else {
-						printf("0\n");
-					}
-				}
-				sensor_cmd.pos++;
+				write_init();
 				break;
 
 			default:
@@ -269,7 +244,7 @@ void write_init() {
 			}
 
 	rclrbit(TIM4_SR1, 0);
-} */
+} 
 
 /* TODO: write
  * uint8_t cmd = 0x33
@@ -311,37 +286,105 @@ void * bare_handler() {
 	rclrbit(TIM4_SR1, 0);
 }
 
+void send_cmd(unsigned char cmd) {
 
-/* void tsensor_init() {
-	
-	sensor_cmd.cmd = 0x33;
-	sensor_cmd.pos = 0;
+
+	int pos = 0;
+
+	for (int i = 0; i < 8; i++) {
+		out_conf();
+		rclrbit(GPIOB_ODR, 6);
+		if ((cmd >> pos) & 0x01) {
+			_block(5);
+			in_conf();
+			_block(60);
+		//	printf("1");
+		}
+		else {
+			_block(60);
+			in_conf();
+		//	printf("0");
+		}
+		pos++;
+	}
+}
+
+void read_reply() {
+
+	for (int i = 0; i < 64; i++) {
+		out_conf();
+		rclrbit(GPIOB_ODR, 6);
+		_block(3);
+		in_conf();
+		if (rchkbit(GPIOB_IDR,6))
+		{
+			printf("1");
+		}	
+		else {
+			printf("0");
+		}
+		_block(60);
+	}
+
+}
+
+void tsensor_init() {
 
 	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
-	rsetbit(RCC_APB1ENR, 2); // TIM4 enable
+	out_conf();	
+	rclrbit(GPIOB_ODR, 6); // loq 
+	_block(450);	
+	in_conf();
+	_block(60);
+	if (!rchkbit(GPIOB_IDR, 6)) {
+		printf("reply");
+	}
+	else {
+		printf("nothing");
+	}
+	_block(240);
 
-	rsetbitsfrom(TIM4_CR1, 5, 0x00); // edge-aligned mode
-	rclrbit(TIM4_CR1, 4); // upcounter (clrbit! not needed to set)
-	rsetbit(TIM4_CR1, 2); // only overflow generates update
 
-	rwrite(TIM4_PSC, PRESCALER - 1);
-	presence_pulse_conf();
-//	rwrite(TIM4_ARR, preload);
-//	rsetbit(TIM4_EGR, 0);
-	
-	ivt_set_gate(46, init_handler, 0);
-	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
+//	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
+//	rsetbit(RCC_APB1ENR, 2); // TIM4 enable
+//
+//	rsetbitsfrom(TIM4_CR1, 5, 0x00); // edge-aligned mode
+//	rclrbit(TIM4_CR1, 4); // upcounter (clrbit! not needed to set)
+//	rsetbit(TIM4_CR1, 2); // only overflow generates update
+//
+//	rwrite(TIM4_PSC, PRESCALER - 1);
+//	presence_pulse_conf();
+////	rwrite(TIM4_ARR, preload);
+////	rsetbit(TIM4_EGR, 0);
+//	
+//	ivt_set_gate(46, init_handler, 0);
+//	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
+//
+////w	rsetbit(GPIOB_ODR, 6); // 
+//	rsetbit(TIM4_DIER, 0);
+//	rsetbit(TIM4_CR1, 0); // start
 
-//w	rsetbit(GPIOB_ODR, 6); // 
-	rsetbit(TIM4_DIER, 0);
-	rsetbit(TIM4_CR1, 0); // start
+} 
 
-} */
+void wait_for_sensor() {
 
+	out_conf();
+	rclrbit(GPIOB_ODR, 6);
+	_block(3);
+	in_conf();
+	while (!rchkbit(GPIOB_IDR, 6)) {
+		printf("c");
+		_block(60);
+		out_conf();
+		rclrbit(GPIOB_ODR, 6);
+		_block(3);
+		in_conf();
+	}
+}
 
 void run() {
 
-//w2	cnt = 0;
+	cnt = 0;
 //w2	rsetbit(RCC_APB2ENR, 3);
 //w2	rwrite(GPIOB_CRL, 0x48444444); // input with pull up down
 //w2	tsensor_simple(5000); 
@@ -352,8 +395,24 @@ void run() {
 
 	//rsetbit(GPIOB_BSRR, 22); // low (<- reset) 
 
-//	tsensor_init(); 
-	write_init();
+	tsensor_init();
+       	send_cmd(0xCC);
+	send_cmd(0x44);
+	wait_for_sensor();
+
+	tsensor_init();	
+	send_cmd(0xCC);
+	send_cmd(0xBE);
+	
+	//send_cmd(0xCC);
+	//send_cmd(0x44);
+	//wait_for_sensor();	
+	//send_cmd(0xBE);
+	//wait_for_sensor();
+	read_reply();
+	//send_cmd(0x33);
+	//read_reply();
+//	write_init();
 
 //	tsensor_output(580, 520);
 //	reset();

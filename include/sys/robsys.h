@@ -10,7 +10,7 @@
  */
 //#define ENABLE_HSE 		
 //#define CRYSTAL_MHZ 	8
-//#define CLKSPEED_MHZ 	72
+#define CLKSPEED_MHZ 8
 extern void clock_init();
 // extern int clock_test();
 // extern void clock_reset();

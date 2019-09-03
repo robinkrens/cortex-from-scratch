@@ -54,7 +54,7 @@ void main()
 	led_init();
 
 	/* Real time clock */
-	rtc_init();
+	//rtc_init();
 
 	/* Eeprom Driver
 	eeprom_at24c_init();
@@ -63,7 +63,10 @@ void main()
 	
 	/* LED Segment Driver */
 	//tm1637_init();
-	
+
+	//for (int i = 0; i < 1000; i++)
+	//	_block(10000);
+
 	/* TEMP SENSOR */
 	run();
 

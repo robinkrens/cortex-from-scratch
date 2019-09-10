@@ -2,10 +2,28 @@
  * 
  * $LOG$
  * 2019/8/28 - ROBIN KRENS	
- * PreInitial version 
+ * Initial version 
  * 
  * $DESCRIPTION$
- * TIMERS, non-blocking...
+ * DS18B20 temperature sensor implementation
+ * Uses the 1-wire protocol. You will need to setup the temperature sensor
+ * with an external pull up resistor. High is the idle state of the chip.  
+ * This implementation does not use parasite power. Uses busy waits. 
+ * The chip doesn't require too accurate timings. Busy waits are between 15
+ * and 240 microseconds.
+ *
+ * The temperature conversion on the chip it takes a lot longer (up to 700ms).
+ * In case temperature is often read, implementing this with interrupts might be
+ * worthwile.
+ *
+ * Each series of commands is initiated with a long reset and prescence pulse.
+ * Implemented:
+ * 	- Read ID of Chip
+ * 	- Convert and read temperature
+ *
+ * TODO:
+ * 	- Scratchpad copy functionality (+EEPROM)
+ * 	- Alarm functionality
  *
  * */
 
@@ -22,358 +40,115 @@
 
 #include <drivers/tsensor.h>
 
-#define PRESCALER 8 // 1 MHz (1 microsecond)
-#define MAXBUF 10
+/* Commands */
+#define READ_ROM	0x33
+#define SKIP_ROM	0xCC
+#define READ_SCRATCH	0xBE
+#define CONVERT_T 	0x44
 
-int cnt;
-enum status { INIT, WAIT_INIT, INIT_DONE } current_status;
-enum rstatus { READ, READ_INIT, READ_DONE } read_status;
-
-static struct {
-	uint8_t buf[MAXBUF];
-	uint8_t pos;
-} readbuf;
-
-static struct {
-	char cmd;
-	uint8_t pos;
-} sensor_cmd;
-
-//
-void read_init();
-
+/* Basic GPIO settings for output pulses and input */
 static void in_conf() {
 	rwrite(GPIOB_CRL, 0x44444444);
 }
 
 static void out_conf() {
-	rwrite(GPIOB_CRL, 0x46444444); // open drain (with pullup resistor)
+	rwrite(GPIOB_CRL, 0x46444444); // open drain (with external pullup resistor)
 }
 
-/* set preload and generate update event */
-static void timer_config(uint16_t preload) {
-	rwrite(TIM4_ARR, preload);
-	rsetbit(TIM4_EGR, 0);
-}
-
-static void presence_pulse_conf() {
-
-	current_status = INIT;
-	out_conf();
-	rclrbit(GPIOB_ODR, 6); // low
-	timer_config(480); // > 480 us
-}
-
-static void presence_reply_conf() {
-
-	current_status = WAIT_INIT;
-	in_conf();
-	timer_config(60); // > 60 us
-}
-
-static void finish_init() {
-	current_status = INIT_DONE;
-	timer_config(480);
-} 
-
-/* Handlers for read, write and init pulses */
-
-void * write_handler() {
-
-
-
-	// i
-	// in_conf();
-
-
-
-	rclrbit(TIM4_SR1, 0);
-	rclrbit(TIM4_SR1, 1);
-	if (sensor_cmd.pos < 7) {
-	
-		if ((sensor_cmd.cmd >> sensor_cmd.pos+1) & 0x01) {
-			printf("1\n");
-			rwrite(TIM4_CCR1, 5);
-			rsetbit(TIM4_EGR, 0);
-		}
-			
-		else {
-			printf("0");
-			rwrite(TIM4_CCR1, 60);
-			rsetbit(TIM4_EGR, 0);
-	
-		}
-		sensor_cmd.pos++;
-	}
-	else {
-
-		read_init();
-	}
-	
-}
-
-void * reply_handler() {
-
-
-	cnt++;
-	if (cnt > 16) {
-		for(;;);
-	}
-
-	rclrbit(TIM4_SR1, 0);
-	rclrbit(TIM4_SR1, 1);
-	switch(read_status) {
-		case(READ_INIT):
-			in_conf();
-			read_status = READ;
-			rsetbit(GPIOB_BSRR, 22); // low (<- reset) 
-			if (rchkbit(GPIOB_IDR, 6)) {
-					printf("h\n");
-			}
-			else {
-				printf("l\n");
-			}
-			timer_config(60);
-			break;
-		case(READ):
-			out_conf();
-			rclrbit(GPIOB_ODR, 6); // low
-			read_status = READ_INIT;
-			timer_config(1);
-			break;
-		case(READ_DONE):
-			// terminate
-			break;
-	}
-
-
-} 
-
-
-void read_init() {
-
-
-	rclrbit(TIM4_CR1, 0); // stop
-	rclrbit(TIM4_CCER, 0);
-	rclrbit(TIM4_CCER, 1);
-
-	//rwrite(GPIOB_CRL, 0x46444444); // floating
-	out_conf();
-	rsetbit(TIM4_CR1, 2); // only overflow generates update
-	read_status = READ_INIT;
-	timer_config(1); // init 1us
-
-	ivt_set_gate(46, reply_handler, 0);
-	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
-	
-	//rclrbit(TIM4_DIER, 0);
-
-	rclrbit(GPIOB_ODR, 6); // low
-	rsetbit(TIM4_DIER, 0);
-
-	rsetbit(TIM4_CR1, 0);
-
-}
-
-
-void write_init() {
-
-	sensor_cmd.cmd = 0x33;
-	sensor_cmd.pos = 0;
-
-	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
-	rsetbit(RCC_APB1ENR, 2); // TIM4 enable
-	rsetbitsfrom(TIM4_CR1, 5, 0x00); // edge-aligned mode
-	rclrbit(TIM4_CR1, 4); // upcounter (clrbit! not needed to set)
-	rsetbit(TIM4_CR1, 2); // only overflow generates update
-	rwrite(TIM4_PSC, PRESCALER - 1);
-	rwrite(GPIOB_CRL, 0x4A444444);
-	
-
-	timer_config(61);	
-
-	if ((sensor_cmd.cmd >> sensor_cmd.pos) & 0x01) {
-		printf("1\n");
-		rwrite(TIM4_CCR1, 5); // < 15ms
-	}
-	else {
-		printf("0\n");
-		rwrite(TIM4_CCR1, 60);
-	}
-
-	rsetbitsfrom(TIM4_CCMR1, 4, 0x6); // forced high on match
-	
-	rsetbit(TIM4_CCER, 0);
-	rsetbit(TIM4_CCER, 1);
-	
-	// set write handler
-	ivt_set_gate(46, write_handler, 0);
-	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
-	
-	//rsetbit(TIM4_DIER, 1);
-	rsetbit(TIM4_DIER, 0);
-	rsetbit(TIM4_CR1, 0);
-
-}
-
-
-void * init_handler() {
-
-	switch(current_status) {
-			case (INIT):
-				printf("M: reset\n");
-				presence_reply_conf();
-				break;
-			case (WAIT_INIT):
-				if (!rchkbit(GPIOB_IDR, 6)) {
-					printf("S: yes\n");
-				}
-				else {
-					printf("S: no\n");
-				}
-				finish_init();
-				break;
-
-			case (INIT_DONE): 
-				printf("M: fin\n");
-				write_init();
-				break;
-
-			default:
-				printf("no status\n");
-			}
-
-	rclrbit(TIM4_SR1, 0);
-} 
-
-/* TODO: write
- * uint8_t cmd = 0x33
- * if (cmd & 0x01)
- * 	1 slot
- * else 0 slot
- * cmd = cmd >> 1
- *
- * read, similar as pulse response */
-
-
-void * bare_handler() {
-
-//w2	cnt += 1;
-//w2	printf("CHECKING STATUS\n");
-//w2
-//w2	if(rchkbit(GPIOB_IDR, 6)) {
-//w2		printf("port high\n");
-//w2	}
-//w2	else {
-//w2		printf("port low\n");
-//w2	}
-	
-
-	cnt += 1;
-	printf("Count event %d\n", cnt);
-	int switchled = cnt % 2;
-	if (switchled) {
-		rwrite(GPIOB_CRL, 0x46444444); //  open drain general for sensor?
-		printf("setting low\n");
-		rclrbit(GPIOB_ODR, 6); // low
-	}
-	else {
-		printf("pulling high \n");
-		rwrite(GPIOB_CRL, 0x44444444); //  open drain general for sensor?
-		//rsetbit(GPIOB_ODR, 6); // high
-		
-	}
-	rclrbit(TIM4_SR1, 0);
-}
-
-void send_cmd(unsigned char cmd) {
-
+/* Send command cmd over data wire. Each write slot should be
+ * at least 60ms.   */
+static void send_cmd(unsigned char cmd) {
 
 	int pos = 0;
 
 	for (int i = 0; i < 8; i++) {
+		// initiate write slot
 		out_conf();
-		rclrbit(GPIOB_ODR, 6);
+		rclrbit(GPIOB_ODR, 6); // pull low
+
+		// writing a logical 1 or 0 
 		if ((cmd >> pos) & 0x01) {
 			_block(5);
 			in_conf();
 			_block(60);
-		//	printf("1");
 		}
 		else {
 			_block(60);
 			in_conf();
-		//	printf("0");
 		}
 		pos++;
 	}
 }
 
-void read_reply() {
+/* Read reply of sensor. Depending on the command, the sensor
+ * can send back up to 9 bytes */
+static char get_byte() {
 
-	for (int i = 0; i < 64; i++) {
+	char c = 0x00;
+
+	for (int i = 0; i < 8; i++) {
+		/* Initate write slot*/
 		out_conf();
 		rclrbit(GPIOB_ODR, 6);
 		_block(3);
+		/* Listen for reply */
 		in_conf();
-		if (rchkbit(GPIOB_IDR,6))
-		{
-			printf("1");
-		}	
-		else {
-			printf("0");
+		if (rchkbit(GPIOB_IDR,6)) {
+			c = c | (0x1 << i);
 		}
+		else {
+			c = c | (0x0 << i);
+		}
+		/* Each read slot should be at least 60 microseconds
+		 * before the next one is initiated */
 		_block(60);
 	}
-
+	return c;
 }
 
-void tsensor_init() {
+
+/* Initiate the sensor, send a reset pulse and wait consequently for 
+ * presence pulse. Slots should be at least 450 and 240 microseconds.  
+ * */
+static int tsensor_init() {
 
 	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
+	
+	/* send presence pulse */
 	out_conf();	
-	rclrbit(GPIOB_ODR, 6); // loq 
+	rclrbit(GPIOB_ODR, 6); // pull low
 	_block(450);	
+	/* wait for the chips reply */
 	in_conf();
 	_block(60);
 	if (!rchkbit(GPIOB_IDR, 6)) {
-		printf("reply");
+		//printf("Info: sensor detected\n");
+		//get_id();
 	}
 	else {
-		printf("nothing");
+		printf("Error: no temperature sensor found!");
+		return -1;
 	}
-	_block(240);
-
-
-//	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
-//	rsetbit(RCC_APB1ENR, 2); // TIM4 enable
-//
-//	rsetbitsfrom(TIM4_CR1, 5, 0x00); // edge-aligned mode
-//	rclrbit(TIM4_CR1, 4); // upcounter (clrbit! not needed to set)
-//	rsetbit(TIM4_CR1, 2); // only overflow generates update
-//
-//	rwrite(TIM4_PSC, PRESCALER - 1);
-//	presence_pulse_conf();
-////	rwrite(TIM4_ARR, preload);
-////	rsetbit(TIM4_EGR, 0);
-//	
-//	ivt_set_gate(46, init_handler, 0);
-//	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
-//
-////w	rsetbit(GPIOB_ODR, 6); // 
-//	rsetbit(TIM4_DIER, 0);
-//	rsetbit(TIM4_CR1, 0); // start
+	_block(240); // finish intialization slot
+	
+	return 0;
 
 } 
 
-void wait_for_sensor() {
 
+
+
+/* Wait for the chip to convert the temperature */
+static void wait_tconvert() {
+
+	printf("Info: Converting temp\n");
+	/* initiate write slot */
 	out_conf();
 	rclrbit(GPIOB_ODR, 6);
 	_block(3);
 	in_conf();
 	while (!rchkbit(GPIOB_IDR, 6)) {
-		printf("c");
+		//printf(".");
 		_block(60);
 		out_conf();
 		rclrbit(GPIOB_ODR, 6);
@@ -382,74 +157,77 @@ void wait_for_sensor() {
 	}
 }
 
-void run() {
-
-	cnt = 0;
-//w2	rsetbit(RCC_APB2ENR, 3);
-//w2	rwrite(GPIOB_CRL, 0x48444444); // input with pull up down
-//w2	tsensor_simple(5000); 
-
-	//cnt = 0;
-	//rsetbit(RCC_APB2ENR, 3); // GPIOB enable
-	//rwrite(GPIOB_CRL, 0x46444444); //  open drain general for sensor?
-
-	//rsetbit(GPIOB_BSRR, 22); // low (<- reset) 
+/* Print some serial and CRC information about the chip */
+void tsensor_printid() {
 
 	tsensor_init();
-       	send_cmd(0xCC);
-	send_cmd(0x44);
-	wait_for_sensor();
+	send_cmd(READ_ROM);
 
-	tsensor_init();	
-	send_cmd(0xCC);
-	send_cmd(0xBE);
+	// replies with 8 bytes
+	int nbytes = 8;
+
+	char scratchbuf[nbytes];
+	memset(&scratchbuf, 0, sizeof(char) * nbytes);
+	scratchbuf[nbytes+1] = '\n';
 	
-	//send_cmd(0xCC);
-	//send_cmd(0x44);
-	//wait_for_sensor();	
-	//send_cmd(0xBE);
-	//wait_for_sensor();
-	read_reply();
-	//send_cmd(0x33);
-	//read_reply();
-//	write_init();
+	for (int i = 0; i < nbytes; i++) {
+		scratchbuf[i] = get_byte();
+	}
 
-//	tsensor_output(580, 520);
-//	reset();
-//	tsensor_simple(580);
+	
+	printf("Family Code: %#x\n", scratchbuf[0]);
+	printf("Serial Number: 0x");
+	for (int i = 1; i < 7; i++) {
+		printf("%x", scratchbuf[i]);
+	}
+	printf("\n");
+	printf("CRC Code: %#x\n", scratchbuf[7]);
+
 }
 
-//void tsensor_output(uint16_t preload, uint16_t compare/*, uint16_t pulses */) {
-//	/* GPIO AND CLOCK */
-//	rsetbit(RCC_APB2ENR, 3); // GPIOB enable
-//	rwrite(GPIOB_CRL, 0x4A444444); // PB6 for Channel 1 TIM4 alternate 
-//	rsetbit(RCC_APB1ENR, 2); // TIM4 enable
-//	
-//	rsetbitsfrom(TIM4_CR1, 5, 0x00); // edge-aligned mode
-//	rclrbit(TIM4_CR1, 4); // upcounter (clrbit! not needed to set)
-//	rsetbit(TIM4_CR1, 2); // only overflow generates update
-//
-//	rwrite(TIM4_PSC, PRESCALER - 1); // 1 MHz
-//	rwrite(TIM4_ARR, preload); // preload 
-//	rwrite(TIM4_CCR1, compare); // compare
-//	//rwrite(TIM4_RCR, pulses - 1); /* repeat ONLY IN ADVANCED TIMER */
-//	
-//	rsetbit(TIM4_EGR, 0); // update generation  
-//	
-//	rsetbit(TIM4_CR1, 3); // one pulse mode
-//	rsetbitsfrom(TIM4_CCMR1, 4, 0x6); // mode
-//	
-//	//rsetbit(TIM4_CCMR1, 3); // preload enable
-//	//rsetbit(TIM4_CR1, 7); // buffered
-//
-//	rsetbit(TIM4_CCER, 0); // enable output channeli 1
-//	rsetbit(TIM4_CCER, 1); // active low
-//	rsetbit(TIM4_CR1, 0); // start counter
-//
-//	/* INTERRUPTS */	
-//	ivt_set_gate(46, tmp_update_handler, 0);
-//
-//	rsetbit(TIM4_DIER, 1);
-//	rsetbit(NVIC_ISER0, 30); // interupt 41 - 32
-//	
-//} 
+/* Convert and read temperature of chip. Sensor has to be initialized twice
+ * since there are two series of commands (see datasheet flowchart) */
+uint16_t tsensor_get_temp() {
+
+	/* initialize sensor and send commands */
+	tsensor_init();
+	send_cmd(SKIP_ROM);
+	send_cmd(CONVERT_T);
+	wait_tconvert();
+
+	tsensor_init();
+	send_cmd(SKIP_ROM);
+	send_cmd(READ_SCRATCH);
+
+	/* Scratchpad is 9 bytes, but we are only interested in 
+	 * the first two bytes, since they contain the LSB and 
+	 * MSB of temperature  */
+	int nbytes = 2;
+
+	char scratchbuf[nbytes];
+	memset(&scratchbuf, 0, sizeof(char) * nbytes);
+	scratchbuf[nbytes+1] = '\n';
+	
+	for (int i = 0; i < nbytes; i++) {
+		scratchbuf[i] = get_byte();
+	}
+
+	// LSB first four bits are after floating point
+	// uint8_t lsb_afltp = scratchbuf[0] & 0xF;
+        
+	int8_t lsb_bfltp = (scratchbuf[0] >> 4) & 0xF;
+	// MSB only the first three bits are used
+	uint8_t msb = scratchbuf[1] & 0x7;
+	
+	return  (msb << 4) + lsb_bfltp;
+	
+}
+
+/* 
+void test() {
+
+	//get_id();
+	uint16_t temp =	get_temp();
+	printf("Current temperature: %d\n", temp);
+
+} */

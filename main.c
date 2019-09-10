@@ -68,7 +68,9 @@ void main()
 	//	_block(10000);
 
 	/* TEMP SENSOR */
-	run();
+	tsensor_printid();
+	uint16_t temp = tsensor_get_temp();
+	printf("Current temperature: %d °C\n", temp); 
 
 	/* Start up terminal */
 	terminal();

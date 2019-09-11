@@ -26,7 +26,7 @@ port this code to any Cortex M0/M3/M4/M7 board.
 	* EEPROM: drivers/at24c.c [COMPLETED]
 	* UART drivers/uart.c [COMPLETED]
 	* LED segment display: drivers/tm1637.c [COMPLETED]
-	* Temperature sensor: drivers/tsensor.c [IN PROGRESS]
+	* Temperature sensor: drivers/tsensor.c [COMPLETED]
 	* OLED display [PLANNED]
 	* Joystick [PLANNED]
 * Memory Management [IN PROGRESS] -- FILE: lib/pool.c

@@ -41,15 +41,17 @@ uint16_t xyvalues[2] = {0,0};
 
 /* Y return values is 
  * ~0xC1C mv means y is idle state 
- * ~0x0 far left
- * ~0xFFF far right */
+ * ~0x0 far up
+ * ~0xFFF far down */
 uint16_t mk450_gety() {
 
 	int y = xyvalues[1]; 
 	return y;
 }
 
-/* X return values (see y) */
+/* X return values (see y)
+ * Far right: 0xFFF
+ * Far left: 0x0 */
 uint16_t mk450_getx() {
 
 	int x = xyvalues[0];

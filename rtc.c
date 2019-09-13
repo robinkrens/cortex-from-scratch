@@ -59,12 +59,13 @@ void * rtc_handler() {
 	} */
 
 	// Simple LED blink 
-	//uint32_t curr = *RTC_CNTL;
-	//int even = *RTC_CNTL % 2;
-	//(!even) ? led_off() : led_on();
+	uint32_t curr = *RTC_CNTL;
+	int even = *RTC_CNTL % 2;
+	(!even) ? led_off() : led_on();
 	
-	printf("X: %x\n", mk450_getx());
-	printf("Y: %x\n", mk450_gety());
+	// Double Axis Joystick 
+	//printf("X: %x\n", mk450_getx());
+	//printf("Y: %x\n", mk450_gety());
 
 	rclrbit(RTC_CRL, 0); /* clear interrupt flag */
 }

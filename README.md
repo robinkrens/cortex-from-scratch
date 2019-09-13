@@ -28,7 +28,8 @@ port this code to any Cortex M0/M3/M4/M7 board.
 	* LED segment display: drivers/tm1637.c [COMPLETED]
 	* Temperature sensor: drivers/tsensor.c [COMPLETED]
 	* OLED display [PLANNED]
-	* Joystick: drivers/mk450_joystick.c [IN PROGRESS] 
+	* Joystick: drivers/mk450_joystick.c [COMPLETED]
+	* TFT Screen: [PLANNED] 
 * Memory Management [IN PROGRESS] -- FILE: lib/pool.c
 * User Mode [PLANNED]
 * System Call PendV implementation [PLANNED]

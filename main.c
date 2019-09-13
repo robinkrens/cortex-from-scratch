@@ -76,7 +76,7 @@ void main()
 	printf("Current temperature: %d °C\n", temp); */
 
 	/* ADC Joystick module */
-	mk450_init();	
+	// mk450_init();	
 
 	/* Start up terminal */
 	terminal();

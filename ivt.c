@@ -124,7 +124,7 @@ void * dummy_isr( struct interrupt_frame * frame ) {
 	printf("PC:%p\n",frame->pc);
 	printf("PSR:%p\n",frame->psr);
 	
-	//for(;;);
+	for(;;);
 }
 
 /* Initialize interrupt vector  */

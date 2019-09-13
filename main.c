@@ -23,9 +23,10 @@
 
 #include <drivers/uart.h>
 #include <drivers/led.h>
-#include <drivers/tm1637.h>
+//#include <drivers/tm1637.h>
 //#include <drivers/at24c.h>
-#include <drivers/tsensor.h>
+//#include <drivers/tsensor.h>
+#include <drivers/mk450_joystick.h>
 
 void main()
 {
@@ -43,6 +44,7 @@ void main()
 	 * by the more accurate RTC.
 	systick_init();
 	*/
+	
 
 	/* Set up a very small libc library */
 	init_printf(NULL, putc);
@@ -54,7 +56,7 @@ void main()
 	led_init();
 
 	/* Real time clock */
-	//rtc_init();
+	rtc_init();
 
 	/* Eeprom Driver
 	eeprom_at24c_init();
@@ -64,17 +66,21 @@ void main()
 	/* LED Segment Driver */
 	//tm1637_init();
 
+	/* ASM Blocking routine */
 	//for (int i = 0; i < 1000; i++)
 	//	_block(10000);
 
-	/* TEMP SENSOR */
+	/* TEMP SENSOR 
 	tsensor_printid();
 	uint16_t temp = tsensor_get_temp();
-	printf("Current temperature: %d °C\n", temp); 
+	printf("Current temperature: %d °C\n", temp); */
+
+	/* ADC Joystick module */
+	mk450_init();	
 
 	/* Start up terminal */
 	terminal();
-
+	
 	/* Should not be here, endless loop */
 	for(;;) {
 

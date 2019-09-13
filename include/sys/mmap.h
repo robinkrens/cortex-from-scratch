@@ -5,7 +5,7 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- * Memory map for the Cortex-A3
+ * Memory map for the Cortex-M3
  * Implementations vary among manufacturers. This one is
  * a STM32F013RC6. Addresses of peripherals vary amongst 
  * manufacturers of boards with similar chips
@@ -45,6 +45,7 @@
 /* NESTED VECTOR INTERRUPT CONTROL REGISTER */
 #define NVIC_ISER0 MEM_ADDR(0xE000E100) // interrupt set enable register
 #define NVIC_ISER1 MEM_ADDR(0xE000E104) // interrupt set enable register
+#define NVIC_ISER2 MEM_ADDR(0xE000E108) // interrupt set enable register
 
 /* SYSTICK REGISTER */
 #define STK_CTRL MEM_ADDR(0xE000E010)
@@ -58,6 +59,7 @@
 
 /* SYSTEM CONTROL REGISTER */
 #define SYSCTRL_RCC MEM_ADDR(0x40021000)
+#define RCC_AHBENR MEM_ADDR(0x40021014) // enable DMA1
 #define RCC_APB1ENR MEM_ADDR(0x4002101C) // register to enable I2C
 #define RCC_APB1RSTR MEM_ADDR(0x40021010) // register to reset I2C
 #define RCC_APB2ENR MEM_ADDR(0x40021018) // register to enable USART1
@@ -68,6 +70,7 @@
 #define GPIOPA_AFSEL MEM_ADDR(0x40004420)
 
 #define GPIOA_CRH MEM_ADDR(0x40010804) // for USART1
+#define GPIOA_CRL MEM_ADDR(0x40010800) // for ADC1
 #define GPIOA_ODR MEM_ADDR(0x4001080C)
 #define GPIOB_CRL MEM_ADDR(0x40010C00) // low register (!) for I2C1
 #define GPIOB_BSRR MEM_ADDR(0x40010C10)
@@ -113,6 +116,7 @@
 /* BACKUP (CALIBR) REGISTERS */
 #define BKP_RTCCR MEM_ADDR(0x40006C2C) // RTC Calibration 
 
+/* TIMERS */
 #define TIM4_CR1 MEM_ADDR(0x40000800)
 #define TIM4_RCR MEM_ADDR(0x40000830)
 #define TIM4_ARR MEM_ADDR(0x4000082C)
@@ -126,3 +130,25 @@
 //#define TIM1_BDTR MEM_ADDR(0x40000844)
 #define TIM4_CCMR1 MEM_ADDR(0x40000818)
 #define TIM4_DIER MEM_ADDR(0x4000080C)
+
+/* ANALOG TO DIGITAL CONVERSION 
+ * (ADC1) */
+#define ADC1_SR1 MEM_ADDR(0x40012400)
+#define ADC1_CR1 MEM_ADDR(0x40012404)
+#define ADC1_CR2 MEM_ADDR(0x40012408)
+#define ADC1_SMPR2 MEM_ADDR(0x40012410)
+#define ADC1_HTR MEM_ADDR(0x40012424)
+#define ADC1_LTR MEM_ADDR(0x40012428)
+#define ADC1_SQR1 MEM_ADDR(0x4001242C)
+#define ADC1_SQR3 MEM_ADDR(0x40012434)
+#define ADC1_DR MEM_ADDR(0x4001244C)
+
+/* DMA1 Channel 1 */
+#define DMA_IFCR MEM_ADDR(0x40020004)
+#define DMA_CCR1 MEM_ADDR(0x40020008)
+#define DMA_CPAR1 MEM_ADDR(0x40020010)
+#define DMA_CMAR1 MEM_ADDR(0x40020014)
+#define DMA_CNDTR1 MEM_ADDR(0x4002000C)
+
+
+

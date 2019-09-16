@@ -26,7 +26,8 @@
 //#include <drivers/tm1637.h>
 //#include <drivers/at24c.h>
 //#include <drivers/tsensor.h>
-#include <drivers/mk450_joystick.h>
+//#include <drivers/mk450_joystick.h>
+#include <drivers/st7735s.h>
 
 void main()
 {
@@ -77,6 +78,9 @@ void main()
 
 	/* ADC Joystick module */
 	// mk450_init();	
+
+	/* TFT screen */
+	tft_init();
 
 	/* Start up terminal */
 	terminal();

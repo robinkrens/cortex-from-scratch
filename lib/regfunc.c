@@ -103,8 +103,9 @@ uint32_t hextoreg(char * a) {
  *
  * Example: for a standard STM32x config board (8MHz) the maximum delay is
  * 0xFFFF * (1/8,000,000) * 3 = 24.58ms 
+ * 0xFFFFFFFF * (1/8MHz) * 3 = 1610ms
  * */
-static void __block(uint16_t count) {
+static void __block(uint32_t count) {
 
 	asm volatile("b1: subs %0, %1, #1" "\n\t"
 		"bne b1" : "=r" (count) : "r" (count));
@@ -113,9 +114,9 @@ static void __block(uint16_t count) {
 /* Delay us microsecond
  * Note: delay includes setup time (about 4 clockcycles), so is quite
  * inaccurate  */
-void _block(uint16_t us) {
+void _block(uint32_t us) {
 	
-	uint16_t count = (us/3) * CLKSPEED_MHZ; // x cycles 
+	uint32_t count = (us/3) * CLKSPEED_MHZ; // x cycles 
 	__block(count);
 
 }

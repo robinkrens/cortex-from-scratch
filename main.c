@@ -57,8 +57,8 @@ void main()
 	led_init();
 
 	/* Real time clock */
-	rtc_init();
-
+	//rtc_init();
+	
 	/* Eeprom Driver
 	eeprom_at24c_init();
 	eeprom_test();

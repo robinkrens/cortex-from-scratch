@@ -25,9 +25,9 @@
 #include <drivers/st7735s.h>
 
 #define TIMEOUT 500
+#define SCRWIDTH 132
+#define SCRHEIGHT 132
 
-void tft_test();
-int tft_command(uint8_t cmd, int argsc, ...);
 void tft_init() {
 
 	/* Peripherial init */
@@ -75,7 +75,6 @@ void tft_init() {
 	tft_command(TFT_PWCTR5, 2, 0x8A, 0xEE);
 	tft_command(TFT_VMCTR1, 1, 0x0E);
 
-
 	tft_command(TFT_INVOFF, 0);
 	tft_command(TFT_COLMOD, 1, 0x05); // 0x05
 	tft_command(TFT_MADCTL, 1, 0xC0); // TODO: check
@@ -93,35 +92,19 @@ void tft_init() {
 			0x2E, 0x2E, 0x37, 0x3F,
 			0x00, 0x00, 0x02, 0x10);
 
+	/* Before turning on the display, fill the display
+	 * so no random display data is shown */
+	tft_fill(0,0,SCRWIDTH-1,SCRHEIGHT-1,0x001F);
+	tft_setpixel(50,50,0xFFFF);
+	
 	/* Turn on */
 	tft_command(TFT_NORON, 0);
 	_block(10000);
 	tft_command(TFT_DISPON, 0);
 	_block(100000);
 
-	/* Test pixel */
-	//tft_command(.., 3, 0xFC, 0xFC, 0xFC);
 
-	for (int i = 0; i < 100; i ++) {
-		tft_command(TFT_CASET, 4, 0x00, i, 0x00, i+1);
-		tft_command(TFT_RASET, 4, 0x00, i, 0x00, i+1);
-		tft_command(TFT_RAMWR, 2, 0xFF, 0xFF);
-	}
-	
-	/* tft_command(TFT_RAMWR, 100,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
-			0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0
-			);
-
-	_block(10000); */
+	/* //_block(10000); 
 
 	tft_command(TFT_CASET, 4, 0x00, 0x08, 0x00, 0x09);
 	tft_command(TFT_RASET, 4, 0x00, 0x08, 0x00, 0x09);
@@ -134,7 +117,7 @@ void tft_init() {
 
         while(!rchkbit(SPI2_SR, 0));
         uint8_t chip_id = *SPI2_DR;
-        printf("COLMOD: %#x\n", chip_id);
+        printf("COLMOD: %#x\n", chip_id); */
 
 	rclrbit(SPI2_CR1, 8); // deselect
 }
@@ -154,76 +137,84 @@ static int txbuf_empty () {
 }
 
 
+/* Function to fill an area starting at (beginx, beginy)
+ * and end ending at (endx, endy */
+int tft_fill(uint8_t beginx, uint8_t beginy, uint8_t endx,
+	       	uint8_t endy, uint16_t color) {
 
+	/* The CASET and RASET commands set the begin X/Y
+	 * and end X/Y of the fill area. Both are split over 
+	 * two paramters/bytes. Most screen are small, so you will 
+	 * only need to consider the first 8 MSBs. Parameter 1 and 
+	 * 3 are always 0. 
+	 *
+	 * In theory, TFT screens of 65,535 by 65,535 could be
+	 * supported */
+	tft_command(TFT_CASET, 4, 0x00, beginx, 0x00, endx);
+	tft_command(TFT_RASET, 4, 0x00, beginy, 0x00, endy);
+
+	/* After setting the fill area, we can send the color
+	 * data. The chip autoincrements the address so we can
+	 * keep writing continiously for the fill area. Note
+	 * that each pixel requires two bytes to be send (16 
+	 * bit mode: ...)   */
+	uint32_t totalwrites = (endx - beginx) * (endy - beginy) * 2;
+	//printf("tw: %d, x: %d, y: %d\n", totalwrites, beginx, beginy);
+	tft_command(TFT_RAMWR, 0);
+	rsetbit(GPIOC_ODR, 6); // data = 1	
+	for (int i = 0; i < totalwrites; i++) {
+			rwrite(SPI2_DR, (uint8_t) (color >> 8));
+			if (!txbuf_empty())
+				return -1;
+			rwrite(SPI2_DR, (uint8_t) (color & 0xFF));
+			if (!txbuf_empty())
+				return -1;
+	}
+	return 0;
+}
+
+/* Function to individually set a pixel 
+ * Refer to tft_fill, similar calls  */
+int tft_setpixel(uint8_t x, uint8_t y, uint16_t color) {
+
+	tft_command(TFT_CASET, 4, 0x00, x, 0x00, x+1);
+	tft_command(TFT_RASET, 4, 0x00, y, 0x00, y+1);
+	tft_command(TFT_RAMWR, 2, (uint8_t) (color >> 8), (uint8_t) (color & 0xFF));
+	return 0;
+}
+
+/* Low-level function to print a character to the display
+ * Should not be used directly, since it does not set
+ * the location */
+int tft_putc(uint16_t fg, uint16_t bg, char c) {
+
+	// lookup table
+}
+
+
+/* Invokes commands with a variable list of paramaters. Sending paramters
+ * requires the D/CX line to be high  */
 int tft_command(uint8_t cmd, int argsc, ...) {
 
 	va_list ap;
-
 	// command
-	rclrbit(GPIOC_ODR, 6);
+	rclrbit(GPIOC_ODR, 6); // D/CX line low
 	rwrite(SPI2_DR, cmd);
 	if (!txbuf_empty()) 
 		return -1;
 
 	// parameter or data
 	if (argsc > 0) {
-		
 		va_start(ap, argsc);
-
-		rsetbit(GPIOC_ODR, 6);	
+		rsetbit(GPIOC_ODR, 6); // D/CX line high	
 		for (int i = 0; i < argsc; i++) {
 			uint8_t p = (uint8_t) va_arg(ap, unsigned int);
 			rwrite(SPI2_DR, p);
 			if (!txbuf_empty())
 				return -1;
-			//printf("%c", (uint8_t) va_arg(ap, unsigned int));
 		}
-
 		va_end(ap);
 	}
-
 	return 0;
 }	
 
-
-/* write command: CS stay low
- * read command: */
-
-void tft_test() {
-
-	
-	// DC is data/command pin set and reset
-	
-	/* uint8_t cmd = 0x11;
-	rwrite(SPI2_DR, cmd);
-	while (!rchkbit(SPI2_SR, 1));
-
-	for (int i = 0; i < 10; i++)
-		_block(0xFFFF); */	
-
-	uint8_t cmd = 0x3A;
-	uint8_t p1 = 0x5;
-
-	// command
-	rwrite(SPI2_DR, cmd);
-	while (!rchkbit(SPI2_SR, 1)); // check line busy?
-
-
-	// paramater 
-	rsetbit(GPIOC_ODR, 6);
-	rwrite(SPI2_DR, p1);
-	while (!rchkbit(SPI2_SR, 1)); // 
-
-	cmd = 0x0C;
-	rclrbit(GPIOC_ODR, 6);
-	rwrite(SPI2_DR, cmd);
-	while (!rchkbit(SPI2_SR, 1)); // 	
-
-	rclrbit(SPI2_CR1, 14); // receive
-
-	while(!rchkbit(SPI2_SR, 0));
-	uint8_t chip_id = *SPI2_DR;
-	printf("Chip id: %#x\n", chip_id);
-
-
-}

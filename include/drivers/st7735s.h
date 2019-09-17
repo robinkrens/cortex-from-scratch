@@ -66,7 +66,9 @@ enum CMDLIST {
 		
 };
 
-extern void tft_init();
+void tft_init();
+int tft_fill(uint8_t beginx, uint8_t beginy, uint8_t endx, uint8_t endy, uint16_t color);
+int tft_setpixel(uint8_t x, uint8_t y, uint16_t color);
+int tft_command(uint8_t cmd, int argsc, ...);
 
 #endif
-

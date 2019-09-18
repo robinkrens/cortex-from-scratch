@@ -197,7 +197,8 @@ int tft_putc(uint16_t fg, uint16_t bg, char c) {
 	//uint8_t databuf[9] =  {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 	
 	int totalpixels = 72;
-	int column, row = 0;
+	int column = 0;
+	int row = 0;
 	uint8_t current;
 
 	tft_command(TFT_CASET, 4, 0x00, 10, 0x00, 18);

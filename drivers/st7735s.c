@@ -21,6 +21,7 @@
 #include <lib/regfunc.h>
 #include <lib/string.h>
 #include <lib/tinyprintf.h>
+//#include <lib/fonts/wogfont.h>
 
 #include <drivers/st7735s.h>
 
@@ -28,6 +29,7 @@
 #define SCRWIDTH 132
 #define SCRHEIGHT 132
 
+int tft_putc(uint16_t, uint16_t, char);
 void tft_init() {
 
 	/* Peripherial init */
@@ -94,8 +96,9 @@ void tft_init() {
 
 	/* Before turning on the display, fill the display
 	 * so no random display data is shown */
-	tft_fill(0,0,SCRWIDTH-1,SCRHEIGHT-1,0x001F);
-	tft_setpixel(50,50,0xFFFF);
+	tft_fill(0,0,SCRWIDTH-1,SCRHEIGHT-1,0x0000);
+	//tft_setpixel(50,50,0xFFFF);
+	tft_putc(0xFFFF, 0x0000, 's');
 	
 	/* Turn on */
 	tft_command(TFT_NORON, 0);
@@ -179,7 +182,7 @@ int tft_setpixel(uint8_t x, uint8_t y, uint16_t color) {
 
 	tft_command(TFT_CASET, 4, 0x00, x, 0x00, x+1);
 	tft_command(TFT_RASET, 4, 0x00, y, 0x00, y+1);
-	tft_command(TFT_RAMWR, 2, (uint8_t) (color >> 8), (uint8_t) (color & 0xFF));
+tft_command(TFT_RAMWR, 2, (uint8_t) (color >> 8), (uint8_t) (color & 0xFF));
 	return 0;
 }
 
@@ -188,11 +191,53 @@ int tft_setpixel(uint8_t x, uint8_t y, uint16_t color) {
  * the location */
 int tft_putc(uint16_t fg, uint16_t bg, char c) {
 
+	//chipselect();
+	// Bitmaps are 9 by 8
+	uint8_t databuf[9] =  {0x73, 0xFB, 0xDB, 0xDB, 0xDB, 0xDB, 0xDB, 0xDF, 0xDA};
+	//uint8_t databuf[9] =  {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	
+	int totalpixels = 72;
+	int column, row = 0;
+	uint8_t current;
+
+	tft_command(TFT_CASET, 4, 0x00, 10, 0x00, 18);
+	tft_command(TFT_RASET, 4, 0x00, 10, 0x00, 17);
+	tft_command(TFT_RAMWR, 0);
+	rsetbit(GPIOC_ODR, 6); // data = 1	
+	for (int i = 0; i < totalpixels; i++) {
+		
+		current = databuf[column];
+
+		if ((current >> (7 - row)) & 0x1) {
+			rwrite(SPI2_DR, (uint8_t) (fg >> 8));
+			if (!txbuf_empty())
+				return -1;
+			rwrite(SPI2_DR, (uint8_t) (fg & 0xFF));
+			if (!txbuf_empty())
+				return -1;
+		}
+		else {
+			rwrite(SPI2_DR, (uint8_t) (bg >> 8));
+			if (!txbuf_empty())
+				return -1;
+			rwrite(SPI2_DR, (uint8_t) (bg & 0xFF));
+			if (!txbuf_empty())
+				return -1;
+		}
+
+		/* Algoritm dependent on draw mode: top down, left right */
+		column++;
+		if (column > 8) {
+			column = 0;
+			row++;	
+		}
+	}
+	return 0;
 	// lookup table
 }
 
 
-/* Invokes commands with a variable list of paramaters. Sending paramters
+/* Invokes commands with a variable list of paramaters. Sending parameters
  * requires the D/CX line to be high  */
 int tft_command(uint8_t cmd, int argsc, ...) {
 

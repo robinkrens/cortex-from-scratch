@@ -24,16 +24,17 @@ uint32_t get_msp(void);
 void sysinfo() {
 
 	uint32_t tmp = *MCU_ID;
-	printf("# DEV ID: ");
+	printf("SYSTEM LOADING...\n\n");
+	printf("DEV ID: ");
 
 	if (tmp & 0x414) 
-		printf("HIGH DENSITY\n");
+		printf("H. DENSITY\n");
 	else {
 		printf("UNKNOWN\n");
 	}
 
 	tmp = (tmp >> 16);
-	printf("# REV: ");
+	printf("REV: ");
 	switch	(tmp) {
 		case 0x1000:
 		      printf("REVISION A\n");
@@ -55,9 +56,9 @@ void sysinfo() {
 	uint32_t data_bss = (uint32_t) &_endofbss - SRAM_OFFSET;
 	uint32_t mem_free = SRAM_SIZE - stack_usage - data_bss;
 
-	printf("# TOTAL MEM: %#x\n", SRAM_SIZE);
-	printf("# FREE MEM: %#x\n", mem_free);
-	printf("# STACK USE: %#x\n", stack_usage);
+	printf("TOTAL MEM: %#x\n", SRAM_SIZE);
+	printf("FREE MEM: %#x\n", mem_free);
+	printf("STACK USE: %#x\n\n", stack_usage);
 
 }
 

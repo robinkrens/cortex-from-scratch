@@ -18,10 +18,12 @@
 
 #include <lib/stdio.h>
 #include <lib/string.h>
+
 #include <drivers/uart.h>
+#include <drivers/st7735s.h>
 
 #define SERIAL 1
-#define TFT 0
+#define TFT 1
 #define BUFSIZE 256
 
 static char stdbuf[BUFSIZE];
@@ -41,6 +43,9 @@ void cputchar(char c) {
 
 	if (SERIAL) {
 		uart_putc(c);
+	}
+	if (TFT) {
+		tft_putc(0xFFFF, 0x0000, c);
 	}
 
 }

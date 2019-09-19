@@ -42,11 +42,6 @@ static struct {
        	 uint8_t y;
 } tftscreen;
 
-void tft_clrln();
-int tft_scroll();
-int tft_puts();
-int tft_putc(uint16_t, uint16_t, char);
-int tft_putc_small(uint16_t, uint16_t, int);
 void tft_init() {
 
 	tftscreen.x = 0;
@@ -121,13 +116,6 @@ void tft_init() {
 	/* Before turning on the display, fill the display
 	 * so no random display data is shown */
 	tft_fill(0,0,SCRWIDTH-1,SCRHEIGHT-1,0x0000);
-	//tft_setpixel(50,50,0xFFFF);
-	//tft_putc(0xFFFF, 0x0000, 's');
-	//tft_putc_small(0xFFFF, 0x0000, 's');
-	
-	//tft_puts("root#");
-	//tft_puts("f");
-	
 
 	/* Turn on */
 	tft_command(TFT_NORON, 0);
@@ -135,26 +123,6 @@ void tft_init() {
 	tft_command(TFT_DISPON, 0);
 	_block(100000);
 	
-	tft_puts("rrrrrrrrrrrrrrrrrrrrrooooooooooooooooooooooooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooootttttttttttttttttttttooooooooooooooooooooott");
-
-
-
-	/* //_block(10000); 
-
-	tft_command(TFT_CASET, 4, 0x00, 0x08, 0x00, 0x09);
-	tft_command(TFT_RASET, 4, 0x00, 0x08, 0x00, 0x09);
-	tft_command(TFT_RAMRD, 0);
-
-	//tft_command(0x0C, 0);
-	//tft_command(0x0A, 0);
-	
-	rclrbit(SPI2_CR1, 14); // receive
-
-        while(!rchkbit(SPI2_SR, 0));
-        uint8_t chip_id = *SPI2_DR;
-        printf("COLMOD: %#x\n", chip_id); */
-
-	rclrbit(SPI2_CR1, 8); // deselect
 }
 
 /* Helper function */
@@ -218,97 +186,21 @@ tft_command(TFT_RAMWR, 2, (uint8_t) (color >> 8), (uint8_t) (color & 0xFF));
 	return 0;
 }
 
-/* Low-level function to print a character to the display
- * Should not be used directly, since it does not set
- * the location */
-int tft_putc(uint16_t fg, uint16_t bg, char c) {
-
-	//chipselect();
-	// Bitmaps are 9 by 8
-	uint8_t databuf[9] =  {0x73, 0xFB, 0xDB, 0xDB, 0xDB, 0xDB, 0xDB, 0xDF, 0xDA};
-	//uint8_t databuf[9] =  {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-	
-	int totalpixels = 72;
-	int column = 0;
-	int row = 0;
-	uint8_t current;
-
-	tft_command(TFT_CASET, 4, 0x00, 10, 0x00, 18);
-	tft_command(TFT_RASET, 4, 0x00, 10, 0x00, 17);
-	tft_command(TFT_RAMWR, 0);
-	rsetbit(GPIOC_ODR, 6); // data = 1	
-	for (int i = 0; i < totalpixels; i++) {
-		
-		current = databuf[column];
-
-		if ((current >> (7 - row)) & 0x1) {
-			rwrite(SPI2_DR, (uint8_t) (fg >> 8));
-			if (!txbuf_empty())
-				return -1;
-			rwrite(SPI2_DR, (uint8_t) (fg & 0xFF));
-			if (!txbuf_empty())
-				return -1;
-		}
-		else {
-			rwrite(SPI2_DR, (uint8_t) (bg >> 8));
-			if (!txbuf_empty())
-				return -1;
-			rwrite(SPI2_DR, (uint8_t) (bg & 0xFF));
-			if (!txbuf_empty())
-				return -1;
-		}
-
-		/* Algoritm dependent on draw mode: top down, left right */
-		column++;
-		if (column > 8) {
-			column = 0;
-			row++;	
-		}
-	}
-	return 0;
-	// lookup table
-}
-
 
 int tft_puts(char * str) {
 
-	//uint8_t temp;
-	//char * string = "root#root#root#root#root#root#root#";
-
-	//printf("string length: %d\n", strlen(string));
-
-	//for (int i = 0; i < 35; i++) {
      	for (int i = 0; i < strlen(str); i++)  {
-		
-		if (tftscreen.y >= 15) {
-			tft_scroll();
-		}
+		tft_putc(0xFFFF, 0x0000, str[i]);
 
-		tft_command(TFT_CASET, 4, 0x00, STARTX + XPOS(tftscreen.x), 0x00, (STARTX + 4) + XPOS(tftscreen.x));
-		tft_command(TFT_RASET, 4, 0x00, STARTY + YPOS(tftscreen.y), 0x00, (STARTY + 6) + YPOS(tftscreen.y));
-		tft_putc_small(0xFFFF, 0x0000, str[i]);
-		
-		tftscreen.buf[tftscreen.cpos] = str[i];
-		tftscreen.cpos++;
-
-		tftscreen.x++;
-		if (tftscreen.x > 20) {
-			tftscreen.x = 0;
-			tftscreen.y++;
-		}
-		// if screen.y at end, "scroll" line
 	}
 	
-
 }
 
 void tft_clrln() {
 
-	
 	tft_puts("                     ");
 	tftscreen.buf[BUFFER - 21] = '\0';
 	tftscreen.cpos -= 21;
-	//for(;;);
 	tftscreen.y = 14;
 }
 
@@ -321,37 +213,42 @@ int tft_scroll() {
 	for (int i = 21; i >= 0; i--)
 		tftscreen.buf[BUFFER - 21] = '\0';
 
-	printf(tftscreen.buf);
-	//for(;;);
-
 	tftscreen.x = 0;
 	tftscreen.y = 0;
 	tftscreen.cpos = 0;
 	
 	tft_puts(tftscreen.buf); // CHECK: ending
-	printf("screen.y %d", tftscreen.y);
 	tft_clrln();
 }
 
-int tft_putc_small(uint16_t fg, uint16_t bg, int c) {
+void tft_linefill() {
 
-	//chipselect();
-	// Bitmaps are 5 by 7
-	//uint8_t databuf[5] =  {0xF6, 0x92, 0x92, 0x92, 0xDE};
+	// TODO
 	
+}
+
+/* Low-level function to print a character to the display
+ * Should not be used directly */
+int tft_putc(uint16_t fg, uint16_t bg, int c) {
+
 	
 	int totalpixels = 35;
 	int column = 0;
 	int row = 0;
 	uint8_t current;
 
+	if (tftscreen.y >= 15) {
+		tft_scroll();
+	}
 
+	tft_command(TFT_CASET, 4, 0x00, STARTX + XPOS(tftscreen.x), 0x00, (STARTX + 4) + XPOS(tftscreen.x));
+	tft_command(TFT_RASET, 4, 0x00, STARTY + YPOS(tftscreen.y), 0x00, (STARTY + 6) + YPOS(tftscreen.y));
+	
 	tft_command(TFT_RAMWR, 0);
 	rsetbit(GPIOC_ODR, 6); // data = 1	
 	for (int i = 0; i < totalpixels; i++) {
 		
 		current = ASCII5x7[(c * 5) + column]; 
-		//current = databuf[column];
 
 		if ((current >> (7 - row)) & 0x1) {
 			rwrite(SPI2_DR, (uint8_t) (fg >> 8));
@@ -377,10 +274,16 @@ int tft_putc_small(uint16_t fg, uint16_t bg, int c) {
 			row++;	
 		}
 	}
+	tftscreen.buf[tftscreen.cpos] = c;
+	tftscreen.cpos++;
 
+	tftscreen.x++;
+	if (tftscreen.x > 20) {
+		tftscreen.x = 0;
+		tftscreen.y++;
+	}
 
 	return 0;
-	// lookup table
 }
 
 

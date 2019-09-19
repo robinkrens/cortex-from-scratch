@@ -41,6 +41,9 @@ void main()
 	/* Initialze basic input and output over serial */
 	uart_init();
 
+	/* TFT screen */
+	tft_init();
+	
 	/* Cortex M* integrated systick, can be replaced
 	 * by the more accurate RTC.
 	systick_init();
@@ -79,8 +82,6 @@ void main()
 	/* ADC Joystick module */
 	// mk450_init();	
 
-	/* TFT screen */
-	tft_init();
 
 	/* Start up terminal */
 	terminal();

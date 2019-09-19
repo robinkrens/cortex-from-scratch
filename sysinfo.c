@@ -24,7 +24,7 @@ uint32_t get_msp(void);
 void sysinfo() {
 
 	uint32_t tmp = *MCU_ID;
-	printf("# DEVICE ID: ");
+	printf("# DEV ID: ");
 
 	if (tmp & 0x414) 
 		printf("HIGH DENSITY\n");
@@ -33,7 +33,7 @@ void sysinfo() {
 	}
 
 	tmp = (tmp >> 16);
-	printf("# REVISION: ");
+	printf("# REV: ");
 	switch	(tmp) {
 		case 0x1000:
 		      printf("REVISION A\n");
@@ -49,15 +49,15 @@ void sysinfo() {
 	}
 
 	extern char _endofbss;
-	
+
 	uint32_t current_stack = get_msp();
 	uint32_t stack_usage = (SRAM_OFFSET + SRAM_SIZE) - current_stack;
 	uint32_t data_bss = (uint32_t) &_endofbss - SRAM_OFFSET;
 	uint32_t mem_free = SRAM_SIZE - stack_usage - data_bss;
 
-	printf("# TOTAL MEMORY: %#x\n", SRAM_SIZE);
-	printf("# FREE MEMORY: %#x\n", mem_free);
-	printf("# STACK USAGE: %#x\n", stack_usage);
+	printf("# TOTAL MEM: %#x\n", SRAM_SIZE);
+	printf("# FREE MEM: %#x\n", mem_free);
+	printf("# STACK USE: %#x\n", stack_usage);
 
 }
 

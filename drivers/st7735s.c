@@ -21,16 +21,40 @@
 #include <lib/regfunc.h>
 #include <lib/string.h>
 #include <lib/tinyprintf.h>
-//#include <lib/fonts/wogfont.h>
+#include <lib/fonts/wogfont.h>
 
 #include <drivers/st7735s.h>
 
 #define TIMEOUT 500
 #define SCRWIDTH 132
 #define SCRHEIGHT 132
+#define STARTX 5
+#define STARTY 5
+#define XPOS(x) (x * 6)
+#define YPOS(y) (y * 8)
+#define BUFFER 352
 
+static struct {
+	 uint16_t cpos;
+	 uint8_t * textmemptr;
+       	 uint8_t buf[BUFFER];
+         uint8_t x;
+       	 uint8_t y;
+} tftscreen;
+
+void tft_clrln();
+int tft_scroll();
+int tft_puts();
 int tft_putc(uint16_t, uint16_t, char);
+int tft_putc_small(uint16_t, uint16_t, int);
 void tft_init() {
+
+	tftscreen.x = 0;
+	tftscreen.y = 0;
+	tftscreen.cpos = 0;
+	tftscreen.textmemptr = tftscreen.buf;
+
+	memset(tftscreen.buf, 0x00, 352); 
 
 	/* Peripherial init */
 	rsetbit(RCC_APB1ENR, 14); // enable SPI2
@@ -98,13 +122,21 @@ void tft_init() {
 	 * so no random display data is shown */
 	tft_fill(0,0,SCRWIDTH-1,SCRHEIGHT-1,0x0000);
 	//tft_setpixel(50,50,0xFFFF);
-	tft_putc(0xFFFF, 0x0000, 's');
+	//tft_putc(0xFFFF, 0x0000, 's');
+	//tft_putc_small(0xFFFF, 0x0000, 's');
 	
+	//tft_puts("root#");
+	//tft_puts("f");
+	
+
 	/* Turn on */
 	tft_command(TFT_NORON, 0);
 	_block(10000);
 	tft_command(TFT_DISPON, 0);
 	_block(100000);
+	
+	tft_puts("rrrrrrrrrrrrrrrrrrrrrooooooooooooooooooooooooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooootttttttttttttttttttttoooooooooooooooooooootttttttttttttttttttttooooooooooooooooooooott");
+
 
 
 	/* //_block(10000); 
@@ -236,6 +268,121 @@ int tft_putc(uint16_t fg, uint16_t bg, char c) {
 	return 0;
 	// lookup table
 }
+
+
+int tft_puts(char * str) {
+
+	//uint8_t temp;
+	//char * string = "root#root#root#root#root#root#root#";
+
+	//printf("string length: %d\n", strlen(string));
+
+	//for (int i = 0; i < 35; i++) {
+     	for (int i = 0; i < strlen(str); i++)  {
+		
+		if (tftscreen.y >= 15) {
+			tft_scroll();
+		}
+
+		tft_command(TFT_CASET, 4, 0x00, STARTX + XPOS(tftscreen.x), 0x00, (STARTX + 4) + XPOS(tftscreen.x));
+		tft_command(TFT_RASET, 4, 0x00, STARTY + YPOS(tftscreen.y), 0x00, (STARTY + 6) + YPOS(tftscreen.y));
+		tft_putc_small(0xFFFF, 0x0000, str[i]);
+		
+		tftscreen.buf[tftscreen.cpos] = str[i];
+		tftscreen.cpos++;
+
+		tftscreen.x++;
+		if (tftscreen.x > 20) {
+			tftscreen.x = 0;
+			tftscreen.y++;
+		}
+		// if screen.y at end, "scroll" line
+	}
+	
+
+}
+
+void tft_clrln() {
+
+	
+	tft_puts("                     ");
+	tftscreen.buf[BUFFER - 21] = '\0';
+	tftscreen.cpos -= 21;
+	//for(;;);
+	tftscreen.y = 14;
+}
+
+/* Text scroll function 
+ * Refeed the buffer */
+int tft_scroll() {
+
+	/* Scroll the buffer  */
+	memcpy(tftscreen.textmemptr, tftscreen.textmemptr + 21, BUFFER - 21);
+	for (int i = 21; i >= 0; i--)
+		tftscreen.buf[BUFFER - 21] = '\0';
+
+	printf(tftscreen.buf);
+	//for(;;);
+
+	tftscreen.x = 0;
+	tftscreen.y = 0;
+	tftscreen.cpos = 0;
+	
+	tft_puts(tftscreen.buf); // CHECK: ending
+	printf("screen.y %d", tftscreen.y);
+	tft_clrln();
+}
+
+int tft_putc_small(uint16_t fg, uint16_t bg, int c) {
+
+	//chipselect();
+	// Bitmaps are 5 by 7
+	//uint8_t databuf[5] =  {0xF6, 0x92, 0x92, 0x92, 0xDE};
+	
+	
+	int totalpixels = 35;
+	int column = 0;
+	int row = 0;
+	uint8_t current;
+
+
+	tft_command(TFT_RAMWR, 0);
+	rsetbit(GPIOC_ODR, 6); // data = 1	
+	for (int i = 0; i < totalpixels; i++) {
+		
+		current = ASCII5x7[(c * 5) + column]; 
+		//current = databuf[column];
+
+		if ((current >> (7 - row)) & 0x1) {
+			rwrite(SPI2_DR, (uint8_t) (fg >> 8));
+			if (!txbuf_empty())
+				return -1;
+			rwrite(SPI2_DR, (uint8_t) (fg & 0xFF));
+			if (!txbuf_empty())
+				return -1;
+		}
+		else {
+			rwrite(SPI2_DR, (uint8_t) (bg >> 8));
+			if (!txbuf_empty())
+				return -1;
+			rwrite(SPI2_DR, (uint8_t) (bg & 0xFF));
+			if (!txbuf_empty())
+				return -1;
+		}
+
+		/* Algoritm dependent on draw mode: top down, left right */
+		column++;
+		if (column > 4) {
+			column = 0;
+			row++;	
+		}
+	}
+
+
+	return 0;
+	// lookup table
+}
+
 
 
 /* Invokes commands with a variable list of paramaters. Sending parameters

@@ -5,9 +5,30 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- * The classic wogfont is back!
- * Designed by Robin Krens
- * 5 by 7 bit font (lower case) 
+ * A non-standard 5 by 7 bit font (ALL CHARs ARE UPPER CASE)
+ * Some characters I haven't designed yet, these will display
+ * a'█' on a VGA or TFT screen. A character is column hex-coded. 
+ *
+ * An example to make things clear!
+ * The letter 'S's bitmap is: 
+ *
+ * WIDTH = 5
+ * ##### L
+ * #___# E
+ * #____ N
+ * ##### G
+ * ____# T
+ * #___# H
+ * ##### = 7
+ *
+ * # represents a selected bit, 1
+ * _ represents a non selected bit, 0
+ *  
+ * For example, the first column is 1111101, the second columm 1001001
+ * For hex encoding we start at the MSB, the first LSB is never used
+ * The first column is 0xF6 and the second column 0x92. The letter 'S' 
+ * equals to: 0xF6, 0x92, 0x92, 0x92, 0xDE, 
+ *
  * */
 
 const uint8_t ASCII5x7[] = {

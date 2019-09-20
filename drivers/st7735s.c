@@ -5,8 +5,19 @@
  * Initial version 
  * 
  * $DESCRIPTION$
+ * Basic driver for the ST7735s TFT screen. Initializes the screen 
+ * Low-level commands can be called by tft_command. See header (.h)
+ * file for an overview of all commands. tft_command can accepts
+ * an unlimited amount of data or parameter commands.
  * 
  * $USAGE$
+ * I added the following functionality:
+ * a. tft_fill: fills a certain area of the screen
+ * b. tft_setpixel: sets a single pixel
+ * c. tft_putc, tft_put: outputs a char/string to the screen, starts
+ * at the upper top right and tracks the position. If the screen is
+ * full, it 'scrolls' automatically. So you basically have a mini 
+ * sized terminal. You can link standard output to this function!
  *
  * */
 
@@ -34,6 +45,7 @@
 #define XPOS(x) (x * 6)
 #define YPOS(y) (y * 8)
 #define BUFFER 352
+
 
 static struct {
 	 uint16_t cpos;
@@ -188,6 +200,7 @@ tft_command(TFT_RAMWR, 2, (uint8_t) (color >> 8), (uint8_t) (color & 0xFF));
 }
 
 
+/* Basic puts function that loops over a string */
 int tft_puts(char * str) {
 
      	for (int i = 0; i < strlen(str); i++)  {
@@ -197,6 +210,8 @@ int tft_puts(char * str) {
 	
 }
 
+/* Used by scroll function to overwrite and clear the last
+ * line on the screen */
 void tft_clrln() {
 
 	tft_puts("                     ");
@@ -211,26 +226,20 @@ int tft_scroll() {
 
 	/* Scroll the buffer  */
 	memcpy(tftscreen.textmemptr, tftscreen.textmemptr + 21, BUFFER - 21);
-	//for (int i = 21; i >= 0; i--)
 	tftscreen.buf[BUFFER - 21] = '\0';
 
 	tftscreen.x = 0;
 	tftscreen.y = 0;
 	tftscreen.cpos = 0;
 
-     	//for (int i = 0; i < 320; i++)     {
-	//	uart_putc(tftscreen.buf[i]);
-	//}
-
 	tft_puts(tftscreen.buf); // CHECK: ending
-	//tftscreen.y = 14;
-	//tft_puts("                     ");
 	tftscreen.y = 14;
 	tftscreen.x = 0;
 	tftscreen.cpos = BUFFER - 21;
-	// DINOSAUR tft_clrln();
 }
 
+/* Fills a line with blank characters, returns to 
+ * the next line */
 void tft_nl() {
 
 	uint8_t blanks = 21 - tftscreen.x;
@@ -246,18 +255,10 @@ void tft_nl() {
  * Should not be used directly */
 int tft_putc(uint16_t fg, uint16_t bg, int c) {
 
-	
 	int totalpixels = 35;
 	int column = 0;
 	int row = 0;
 	uint8_t current;
-
-
-	//if ((c == '\n') && (tftscreen.y == 14)) {
-	//	tft_nl();
-	//	tft_scroll2();
-	//	return 1;
-	//}
 
 	if (c == '\n') {
 		if (tftscreen.y == 14) {
@@ -270,20 +271,9 @@ int tft_putc(uint16_t fg, uint16_t bg, int c) {
 			return 1;
 		}
 	}
-	////	else {
-	////		tft_putc(0xFFFF, 0x0000, 'o');
-	////	}
-	//	//else {
-	//	//	ENDFLAG = true;
-	//	//}
-	//}
 
 	if (tftscreen.y >= 15) {
 		tft_scroll();
-		//if (ENDFLAG) {
-		//	ENDFLAG = false;
-		//	return 1;
-		//}
 	}
 
 	tft_command(TFT_CASET, 4, 0x00, STARTX + XPOS(tftscreen.x), 0x00, (STARTX + 4) + XPOS(tftscreen.x));

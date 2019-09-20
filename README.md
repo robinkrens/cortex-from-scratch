@@ -29,7 +29,7 @@ port this code to any Cortex M0/M3/M4/M7 board.
 	* Temperature sensor: drivers/tsensor.c [COMPLETED]
 	* OLED display [PLANNED]
 	* Joystick: drivers/mk450_joystick.c [COMPLETED]
-	* TFT Screen: [PLANNED] 
+	* TFT Screen: drivers/st7735s.c, include/libs/fonts/wogfont.h [IN PROGRESS]
 * Memory Management [IN PROGRESS] -- FILE: lib/pool.c
 * User Mode [PLANNED]
 * System Call PendV implementation [PLANNED]
@@ -39,9 +39,13 @@ port this code to any Cortex M0/M3/M4/M7 board.
 * Multiple processes and scheduling [PLANNED]
 
 ## SCREENSHOTS
-Here is a screenshot that shows the terminal just after booting:
+Here are some screenshots that shows the terminal just after booting:
 
-![Screenshot](https://github.com/robinkrens/cortex-from-scratch/raw/master/img/screenshot.png "screenshot")
+* Serial (over UART)
+![Screenshot](https://github.com/robinkrens/cortex-from-scratch/raw/master/img/serial.png "serial terminal screenshot")
+
+* TFT screen output (SPI):
+![Screenshot](https://github.com/robinkrens/cortex-from-scratch/raw/master/img/tft.png "tft peripheral screenshot")
 
 
 

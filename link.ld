@@ -21,6 +21,8 @@
  *
  * */
 
+HEAP_SIZE = 0x100;
+
 MEMORY
 {
 	FLASH (xr) : ORIGIN = 0x08000000, LENGTH = 512K
@@ -48,4 +50,8 @@ SECTIONS
 		*(.bss)
 	}
        	_endofbss = .;	
+	_beginofheap = .;
+	. = . + HEAP_SIZE;
+	. = ALIGN(8);
+	_endofheap = .;
 }

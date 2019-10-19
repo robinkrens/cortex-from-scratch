@@ -26,6 +26,8 @@
 #define SRAM_SIZE	0x00010000 
 #define SRAM_OFFSET	0x20000000
 
+/* TODO #define KHEAP_SIZE	0x100 */
+
 /* Safety macro's to get the address or value */
 #define MEM_VALUE(addr) *((volatile uint32_t(*) (addr))
 #define MEM_ADDR(addr) ((volatile uint32_t *) (addr))

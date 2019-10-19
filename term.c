@@ -21,6 +21,8 @@
 #include <lib/regfunc.h>
 #include <lib/tinyprintf.h>
 
+#include <lib/pool.h>
+
 #include <drivers/led.h>
 
 #define SERIAL 1
@@ -40,7 +42,6 @@
  * */
 
 static char buf[BUFSIZE];
-
 
 struct cmd {
 	char * name;
@@ -82,6 +83,12 @@ int showmem(int argc, char ** argsv) {
 		return 1;
 	
 	}
+
+	extern mem_pool_t kheap_pool;
+	int * a = kalloc(&kheap_pool);
+	*a = argc;
+	printf("%d\n", *a);
+	printf("%p\n", a);
 
 	return 0;
 }

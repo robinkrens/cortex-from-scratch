@@ -33,7 +33,7 @@ void sysinfo() {
 		printf("UNKNOWN\n");
 	}
 
-	tmp = (tmp >> 16);
+	/* tmp = (tmp >> 16);
 	printf("REV: ");
 	switch	(tmp) {
 		case 0x1000:
@@ -47,7 +47,7 @@ void sysinfo() {
 		      break;
 		default:
 		      printf("UNKNOWN\n");
-	}
+	} */
 
 	extern char _endofbss;
 
@@ -56,9 +56,12 @@ void sysinfo() {
 	uint32_t data_bss = (uint32_t) &_endofbss - SRAM_OFFSET;
 	uint32_t mem_free = SRAM_SIZE - stack_usage - data_bss;
 
+	extern uint32_t HEAP_SIZE;
+	
 	printf("TOTAL MEM: %#x\n", SRAM_SIZE);
 	printf("FREE MEM: %#x\n", mem_free);
-	printf("STACK USE: %#x\n\n", stack_usage);
+	printf("STACK USE: %#x\n", stack_usage);
+	printf("HEAP_SIZE: %#x\n\n", &HEAP_SIZE);
 
 }
 

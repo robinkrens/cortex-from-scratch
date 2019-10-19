@@ -32,77 +32,65 @@
 #include <lib/pool.h>
 #include <lib/string.h>
 
-struct MEMPOOL {
-
-	unsigned short blocks; 
-	unsigned short block_size; 
-	unsigned short free_blocks;
-	unsigned short blocks_alloc; 
-	uint32_t * SRAM_entry;
-	uint32_t * m_next; 
-
-};
-
-struct MEMPOOL mem;
-
  
-void pool_init(size_t size_arg, unsigned int blocks_arg, uint32_t * entry_SRAM) {
+void kpool_init(mem_pool_t * pool, size_t size_arg, unsigned int blocks_arg, uint32_t * entry_SRAM) {
 
-	 mem.blocks = blocks_arg;
-	 mem.block_size = size_arg;
-	 mem.SRAM_entry = entry_SRAM;
+	 pool->blocks = blocks_arg;
+	 pool->block_size = size_arg;
+	 pool->blocks_init = 0;
+	 pool->SRAM_entry = entry_SRAM;
 	 memset(entry_SRAM, 0x00, (sizeof(char) * (size_arg * blocks_arg)));
-	 mem.free_blocks = blocks_arg;
-	 mem.m_next = mem.SRAM_entry;
+	 pool->free_blocks = blocks_arg;
+	 pool->m_next = pool->SRAM_entry;
  }
 
  /* void deletepool()  {
-	 mem.SRAM_entry = NULL;
+	 pool->SRAM_entry = NULL;
  } */
 
 /* Helper functions */
-uint32_t * AddrFromIndex(unsigned int i)  {
-	return mem.SRAM_entry + ( i * mem.block_size );
+uint32_t * AddrFromIndex(mem_pool_t * pool, unsigned int i)  {
+	return pool->SRAM_entry + ( i * pool->block_size );
 
  }
  
-unsigned int IndexFromAddr(const uint32_t * p) {
-	return (((unsigned int)(p - mem.SRAM_entry)) / mem.block_size);
+unsigned int IndexFromAddr(mem_pool_t * pool, const uint32_t * p) {
+	return (((unsigned int)(p - pool->SRAM_entry)) / pool->block_size);
 
 }
 
 /* alloc and free */ 
-void * alloc() {
- 	if (mem.blocks_alloc < mem.blocks ) {
-		 unsigned int * p = (unsigned int *)AddrFromIndex( mem.blocks_alloc );
-	 	*p = mem.blocks_alloc + 1;
-		 mem.blocks_alloc++;
+void * kalloc(mem_pool_t * pool) {
+ 	if (pool->blocks_init < pool->blocks ) {
+		 unsigned int * p = (unsigned int *)AddrFromIndex(pool, pool->blocks_init );
+	 	*p = pool->blocks_init + 1;
+		 pool->blocks_init++;
 	 }
 
 	 void* ret = NULL;
-	 if ( mem.free_blocks > 0 ) {
-		 ret = (void*)mem.m_next;
-		 --mem.free_blocks;
-	 if (mem.free_blocks!=0) {
-		mem.m_next = AddrFromIndex( *((unsigned int*)mem.m_next) );
+	 if ( pool->free_blocks > 0 ) {
+		 ret = (void*)pool->m_next;
+		 --pool->free_blocks;
+	 if (pool->free_blocks!=0) {
+		pool->m_next = AddrFromIndex(pool, *((unsigned int*)pool->m_next) );
 	 }
 	 else {
-		 mem.m_next = NULL;
+		 pool->m_next = NULL;
 	 }
  	}
 	 
 	 return ret;
  }
 
-void free(void* p)  {
-	 if (mem.m_next != NULL) {
-		 (*(unsigned int *)p) = IndexFromAddr( mem.m_next );
-		 mem.m_next = (uint32_t *)p;
+void kfree(mem_pool_t * pool, void* p)  {
+	 if (pool->m_next != NULL) {
+		 (*(unsigned int *)p) = IndexFromAddr(pool, pool->m_next );
+		 pool->m_next = (uint32_t *)p;
  	}
 	 else {
-		 *((unsigned int*)p) = mem.blocks;
-		 mem.m_next = (uint32_t *) p;
+		 *((unsigned int*)p) = pool->blocks;
+		 pool->m_next = (uint32_t *) p;
 	 }
 		
-	 ++mem.free_blocks;
+	 ++pool->free_blocks;
  }

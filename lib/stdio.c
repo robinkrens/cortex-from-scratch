@@ -23,7 +23,7 @@
 #include <drivers/st7735s.h>
 
 #define SERIAL 1
-#define TFT 1
+#define TFT 0
 #define BUFSIZE 256
 
 static char stdbuf[BUFSIZE];

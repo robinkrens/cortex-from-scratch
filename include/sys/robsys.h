@@ -30,9 +30,9 @@ extern void systick_init();
 extern void sysinfo();
 
 /* POOL.c */
-extern void pool_init(size_t, unsigned int, uint32_t *);
-extern void * alloc();
-extern void free();
+//extern void pool_init(size_t, unsigned int, uint32_t *);
+//extern void * alloc();
+//extern void free();
 
 /* TERM.C */
 extern void terminal();

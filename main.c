@@ -18,6 +18,7 @@
 #include <sys/mmap.h>
 
 #include <lib/regfunc.h>
+#include <lib/pool.h>
 #include <lib/stdio.h>
 #include <lib/tinyprintf.h>
 
@@ -28,6 +29,8 @@
 //#include <drivers/tsensor.h>
 //#include <drivers/mk450_joystick.h>
 #include <drivers/st7735s.h>
+
+mem_pool_t kheap_pool;
 
 void main()
 {
@@ -42,14 +45,13 @@ void main()
 	uart_init();
 
 	/* TFT screen */
-	tft_init();
+	// tft_init();
 	
 	/* Cortex M* integrated systick, can be replaced
 	 * by the more accurate RTC.
 	systick_init();
 	*/
 	
-
 	/* Set up a very small libc library */
 	init_printf(NULL, putc);
 
@@ -61,7 +63,35 @@ void main()
 
 	/* Real time clock */
 	rtc_init();
+
+	extern uint32_t * _beginofheap;
+	//printf("%p", &_beginofheap);
+	kpool_init(&kheap_pool, 512, 10, (uint32_t *) &_beginofheap);
+
+//	printf("%p\n", &kheap_pool);
+
+	char * string = (char *) kalloc(&kheap_pool);
+	char * string2 = (char *) kalloc(&kheap_pool);
+	char * string3 = (char *) kalloc(&kheap_pool);
+
+
+	printf("%p\n", string);
+	printf("%p\n", string2);
+	printf("%p\n", string3);
+
+	kfree(&kheap_pool, string);
+
+	char * string6 = (char *) kalloc(&kheap_pool);
+	char * string7 = (char *) kalloc(&kheap_pool);
+	printf("%p\n", string6);
+	printf("%p\n", string7);
+
+	//free(string);
+
+	//char * string2 = (char *) alloc();
 	
+	//string2 = "taalb";
+
 	/* Eeprom Driver
 	eeprom_at24c_init();
 	eeprom_test();

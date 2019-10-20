@@ -21,8 +21,6 @@
 #include <lib/regfunc.h>
 #include <lib/tinyprintf.h>
 
-#include <lib/pool.h>
-
 #include <drivers/led.h>
 
 #define SERIAL 1
@@ -51,8 +49,9 @@ struct cmd {
 struct cmd builtincmds[BUILTINCMDS];
 
 int info(int argc, char ** argsv) {
-	extern mem_pool_t kheap_pool;
-	kheap_info(&kheap_pool);
+	/* extern mem_pool_t kheap_pool;
+	kheap_info(&kheap_pool); */
+	kalloc(get_kheap());
 	return 0;
 }
 

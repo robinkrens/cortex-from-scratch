@@ -12,15 +12,21 @@
  * to protect certain zones.
  *
  * This work is based on an article of Ben Kenwright.
+ *
+ * Blocks are fixed size. In some situations ideal, in some situation
+ * may be not. It's fast.
  * 
  * Preconditions: programmer should make sure the SRAM entry point
  * + (blocks * blocksize) is free. 
  *
  * $SAMPLE USAGE$
- * KERNEL: can initialize a big pool for all user tasks
+ * KERNEL: initialize one (or multiple!) fixed memory-sized 
+ * kernal heaps
  *
  * USER TASKS/PROCESS: can use this to dynamically allocate their
- * own memory (i.e. heap)
+ * own memory (i.e. heap). You might argue that a fixed size memory
+ * pool is not ideal, but you would be amazed that many programs
+ * use structs of more or less similar size.
  * 
  * 
  * * */
@@ -34,7 +40,7 @@
 #include <lib/string.h>
 
  
-void kpool_init(mem_pool_t * pool, size_t size_arg, unsigned int blocks_arg, unsigned char* entry_SRAM) {
+void pool_init(mem_pool_t * pool, size_t size_arg, unsigned int blocks_arg, unsigned char* entry_SRAM) {
 
 	 pool->blocks = blocks_arg;
 	 pool->block_size = size_arg;
@@ -61,7 +67,8 @@ unsigned int IndexFromAddr(mem_pool_t * pool, const unsigned char* p) {
 }
 
 /* alloc and free */ 
-void * kalloc(mem_pool_t * pool) {
+void * alloc(void * s) {
+	mem_pool_t * pool = (mem_pool_t *) s;
  	if (pool->blocks_init < pool->blocks ) {
 		 unsigned int * p = (unsigned int *)AddrFromIndex(pool, pool->blocks_init );
 	 	*p = pool->blocks_init + 1;
@@ -83,23 +90,26 @@ void * kalloc(mem_pool_t * pool) {
 	 return ret;
  }
 
-void kfree(mem_pool_t * pool, void* p)  {
-	 if (pool->m_next != NULL) {
-		 (*(unsigned int *)p) = IndexFromAddr(pool, pool->m_next );
-		 pool->m_next = (unsigned char*)p;
- 	}
-	 else {
+void free(void * s, void* p)  {
+
+	mem_pool_t * pool = (mem_pool_t *) s;
+	if (pool->m_next != NULL) {
+		(*(unsigned int *)p) = IndexFromAddr(pool, pool->m_next );
+		pool->m_next = (unsigned char*)p;
+	}
+	else {
 		 *((unsigned int*)p) = pool->blocks;
 		 pool->m_next = (unsigned char*) p;
-	 }
+	}
 		
-	 ++pool->free_blocks;
+	++pool->free_blocks;
 }
 
 /* Heap info helper functions */
 
-void kheap_info(mem_pool_t * pool) {
+void heap_info(void * s) {
 
+	mem_pool_t * pool = (mem_pool_t *) s;
 
 	printf("HEAP INFO:\n");
 	printf("BLOCKS FREE: %d\n", pool->free_blocks);

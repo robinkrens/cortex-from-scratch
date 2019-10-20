@@ -56,12 +56,12 @@ void sysinfo() {
 	uint32_t data_bss = (uint32_t) &_endofbss - SRAM_OFFSET;
 	uint32_t mem_free = SRAM_SIZE - stack_usage - data_bss;
 
-	extern uint32_t HEAP_SIZE;
+	extern uint32_t KHEAP_SIZE;
 	
 	printf("TOTAL MEM: %#x\n", SRAM_SIZE);
 	printf("FREE MEM: %#x\n", mem_free);
 	printf("STACK USE: %#x\n", stack_usage);
-	printf("HEAP_SIZE: %#x\n\n", &HEAP_SIZE);
+	printf("HEAP_SIZE: %#x\n\n", &KHEAP_SIZE);
 
 }
 

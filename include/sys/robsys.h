@@ -12,7 +12,6 @@
 //#define CRYSTAL_MHZ 	8
 #define CLKSPEED_MHZ 8
 extern void clock_init();
-// extern int clock_test();
 // extern void clock_reset();
 
 /* RTC.C */
@@ -29,10 +28,14 @@ extern void systick_init();
 /* SYSINFO.C */
 extern void sysinfo();
 
-/* POOL.c */
-//extern void pool_init(size_t, unsigned int, uint32_t *);
-//extern void * alloc();
-//extern void free();
+/* HEAP.c */
+/* typedef void * (kalloc)(void * s);
+ * typedef void (kfree)(void * s, void * p); */
+extern void kheap_init();
+extern void * get_kheap();
+extern void * kalloc(void * s);
+extern void kfree(void * s, void * p);
+extern void kheap_info(void * s);
 
 /* TERM.C */
 extern void terminal();

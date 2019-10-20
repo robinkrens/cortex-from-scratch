@@ -21,7 +21,7 @@
  *
  * */
 
-HEAP_SIZE = 0x100;
+KHEAP_SIZE = 0x100; 
 
 MEMORY
 {
@@ -51,7 +51,7 @@ SECTIONS
 	}
        	_endofbss = .;	
 	_beginofheap = .;
-	. = . + HEAP_SIZE;
+	. = . + KHEAP_SIZE;
 	. = ALIGN(8);
 	_endofheap = .;
 }

@@ -12,7 +12,7 @@ struct mem_pool {
 
 };
 
-extern void kpool_init(mem_pool_t *, size_t size_arg, unsigned int blocks_arg, unsigned char * entry_SRAM); 
-extern void * kalloc(mem_pool_t * );
-extern void kfree(mem_pool_t *, void* p); 
-extern void kheap_info(mem_pool_t *); 
+void pool_init(mem_pool_t *, size_t size_arg, unsigned int blocks_arg, unsigned char * entry_SRAM); 
+void * alloc(void * s);
+void free(void * s, void* p); 
+void heap_info(void * s); 

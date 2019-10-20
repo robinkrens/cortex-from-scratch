@@ -31,7 +31,6 @@
 //#include <drivers/mk450_joystick.h>
 #include <drivers/st7735s.h>
 
-mem_pool_t kheap_pool;
 
 void main()
 {
@@ -56,6 +55,10 @@ void main()
 	/* Set up a very small libc library */
 	init_printf(NULL, putc);
 
+	/* Heap init */
+	kheap_init();
+	//printf("%p\n", get_kheap());
+	
 	/* Display some basic info at startup */
 	sysinfo();
 
@@ -65,54 +68,6 @@ void main()
 	/* Real time clock */
 	rtc_init();
 
-	extern uint32_t * _beginofheap;
-	//printf("%p", &_beginofheap);
-	kpool_init(&kheap_pool, 0x10, 10, (uint32_t *) &_beginofheap);
-
-//	printf("%p\n", &kheap_pool);
-
-	char * string = (char *) kalloc(&kheap_pool);
-	char * string2 = (char *) kalloc(&kheap_pool);
-	char * string3 = (char *) kalloc(&kheap_pool);
-
-
-	memset(string, 0xFF, 0x10);
-	memset(string2, 0xEE, 0x10);
-	memset(string3, 0xDD, 0x10);
-
-	printf("%p\n", string);
-	printf("%p\n", string2);
-	printf("%p\n", string3);
-
-	kfree(&kheap_pool, string);
-
-	char * string6 = (char *) kalloc(&kheap_pool);
-
-
-	memset(string6, 0xCC, 0x10);
-//	char * string7 = (char *) kalloc(&kheap_pool);
-	printf("%p\n", string6);
-//	printf("%p\n", string7);
-
-
-	kfree(&kheap_pool, string2);
-
-	char * string7 = (char *) kalloc(&kheap_pool);
-	memset(string7, 0xBB, 0x10);
-
-
-	char * string8 = (char *) kalloc(&kheap_pool);
-	memset(string8, 0xAA, 0x10);
-
-	char * string9 = (char *) kalloc(&kheap_pool);
-	memset(string9, 0x99, 0x10);
-	//free(string);
-
-	kfree(&kheap_pool, string3);
-
-	//char * string2 = (char *) alloc();
-	
-	//string2 = "taalb";
 
 	/* Eeprom Driver
 	eeprom_at24c_init();

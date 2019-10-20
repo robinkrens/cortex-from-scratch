@@ -7,11 +7,12 @@ struct mem_pool {
 	unsigned short block_size; 
 	unsigned short free_blocks;
 	unsigned short blocks_init; 
-	uint32_t * SRAM_entry;
-	uint32_t * m_next; 
+	unsigned char * SRAM_entry;
+	unsigned char * m_next; 
 
 };
 
-extern void kpool_init(mem_pool_t *, size_t size_arg, unsigned int blocks_arg, uint32_t * entry_SRAM); 
+extern void kpool_init(mem_pool_t *, size_t size_arg, unsigned int blocks_arg, unsigned char * entry_SRAM); 
 extern void * kalloc(mem_pool_t * );
 extern void kfree(mem_pool_t *, void* p); 
+extern void kheap_info(mem_pool_t *); 

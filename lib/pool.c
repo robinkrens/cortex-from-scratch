@@ -30,10 +30,11 @@
 #include <stdint.h>
 
 #include <lib/pool.h>
+#include <lib/tinyprintf.h>
 #include <lib/string.h>
 
  
-void kpool_init(mem_pool_t * pool, size_t size_arg, unsigned int blocks_arg, uint32_t * entry_SRAM) {
+void kpool_init(mem_pool_t * pool, size_t size_arg, unsigned int blocks_arg, unsigned char* entry_SRAM) {
 
 	 pool->blocks = blocks_arg;
 	 pool->block_size = size_arg;
@@ -49,12 +50,12 @@ void kpool_init(mem_pool_t * pool, size_t size_arg, unsigned int blocks_arg, uin
  } */
 
 /* Helper functions */
-uint32_t * AddrFromIndex(mem_pool_t * pool, unsigned int i)  {
+unsigned char* AddrFromIndex(mem_pool_t * pool, unsigned int i)  {
 	return pool->SRAM_entry + ( i * pool->block_size );
 
  }
  
-unsigned int IndexFromAddr(mem_pool_t * pool, const uint32_t * p) {
+unsigned int IndexFromAddr(mem_pool_t * pool, const unsigned char* p) {
 	return (((unsigned int)(p - pool->SRAM_entry)) / pool->block_size);
 
 }
@@ -85,12 +86,43 @@ void * kalloc(mem_pool_t * pool) {
 void kfree(mem_pool_t * pool, void* p)  {
 	 if (pool->m_next != NULL) {
 		 (*(unsigned int *)p) = IndexFromAddr(pool, pool->m_next );
-		 pool->m_next = (uint32_t *)p;
+		 pool->m_next = (unsigned char*)p;
  	}
 	 else {
 		 *((unsigned int*)p) = pool->blocks;
-		 pool->m_next = (uint32_t *) p;
+		 pool->m_next = (unsigned char*) p;
 	 }
 		
 	 ++pool->free_blocks;
- }
+}
+
+/* Heap info helper functions */
+
+void kheap_info(mem_pool_t * pool) {
+
+
+	printf("HEAP INFO:\n");
+	printf("BLOCKS FREE: %d\n", pool->free_blocks);
+
+	unsigned char* curr_addr = pool->SRAM_entry;
+
+	// Loop over heap blocks
+	for (int i = 0; i < pool->blocks; i++) {
+		printf("\nBLOCK %d", i+1);
+		for (int j = 0; j < (pool->block_size-1); j++) {
+
+			if (j % 10 == 0)
+				printf("\n%x ", curr_addr);
+			printf("%#x ", *curr_addr);
+			curr_addr++;
+		}
+		printf("\n");
+		curr_addr++;
+		
+	}
+	printf("\n");
+
+}
+
+
+

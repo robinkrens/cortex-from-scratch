@@ -51,7 +51,8 @@ struct cmd {
 struct cmd builtincmds[BUILTINCMDS];
 
 int info(int argc, char ** argsv) {
-	sysinfo();
+	extern mem_pool_t kheap_pool;
+	kheap_info(&kheap_pool);
 	return 0;
 }
 
@@ -83,12 +84,6 @@ int showmem(int argc, char ** argsv) {
 		return 1;
 	
 	}
-
-	extern mem_pool_t kheap_pool;
-	int * a = kalloc(&kheap_pool);
-	*a = argc;
-	printf("%d\n", *a);
-	printf("%p\n", a);
 
 	return 0;
 }

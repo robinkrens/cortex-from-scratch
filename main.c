@@ -20,6 +20,7 @@
 #include <lib/regfunc.h>
 #include <lib/pool.h>
 #include <lib/stdio.h>
+#include <lib/string.h>
 #include <lib/tinyprintf.h>
 
 #include <drivers/uart.h>
@@ -66,7 +67,7 @@ void main()
 
 	extern uint32_t * _beginofheap;
 	//printf("%p", &_beginofheap);
-	kpool_init(&kheap_pool, 512, 10, (uint32_t *) &_beginofheap);
+	kpool_init(&kheap_pool, 0x10, 10, (uint32_t *) &_beginofheap);
 
 //	printf("%p\n", &kheap_pool);
 
@@ -75,6 +76,10 @@ void main()
 	char * string3 = (char *) kalloc(&kheap_pool);
 
 
+	memset(string, 0xFF, 0x10);
+	memset(string2, 0xEE, 0x10);
+	memset(string3, 0xDD, 0x10);
+
 	printf("%p\n", string);
 	printf("%p\n", string2);
 	printf("%p\n", string3);
@@ -82,11 +87,28 @@ void main()
 	kfree(&kheap_pool, string);
 
 	char * string6 = (char *) kalloc(&kheap_pool);
-	char * string7 = (char *) kalloc(&kheap_pool);
-	printf("%p\n", string6);
-	printf("%p\n", string7);
 
+
+	memset(string6, 0xCC, 0x10);
+//	char * string7 = (char *) kalloc(&kheap_pool);
+	printf("%p\n", string6);
+//	printf("%p\n", string7);
+
+
+	kfree(&kheap_pool, string2);
+
+	char * string7 = (char *) kalloc(&kheap_pool);
+	memset(string7, 0xBB, 0x10);
+
+
+	char * string8 = (char *) kalloc(&kheap_pool);
+	memset(string8, 0xAA, 0x10);
+
+	char * string9 = (char *) kalloc(&kheap_pool);
+	memset(string9, 0x99, 0x10);
 	//free(string);
+
+	kfree(&kheap_pool, string3);
 
 	//char * string2 = (char *) alloc();
 	

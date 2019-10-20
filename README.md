@@ -41,10 +41,12 @@ port this code to any Cortex M0/M3/M4/M7 board.
 ## SCREENSHOTS
 Here are some screenshots that shows the terminal just after booting:
 
-* Serial (over UART)
+Serial (over UART)
+
 ![Screenshot](https://github.com/robinkrens/cortex-from-scratch/raw/master/img/serial.png "serial terminal screenshot")
 
-* TFT screen output (SPI):
+TFT screen output (SPI):
+
 ![Screenshot](https://github.com/robinkrens/cortex-from-scratch/raw/master/img/tft.png "tft peripheral screenshot")
 
 

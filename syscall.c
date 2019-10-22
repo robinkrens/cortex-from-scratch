@@ -37,52 +37,46 @@
 #include <lib/tinyprintf.h>
 
 
-/* the function gets called for 
- * */
+/*
+ * This is a so-called first interrupt handler
+ * The naked attribute makes sure the compiler doesn't
+ * places registers on the stack.  */
+
 __attribute__ ((naked))
-void * __svc_handler__(int x) {
+void * _svc_handler(void) {
 
-	uint8_t svc_nr;
+	uint32_t * current_sp;
 
+	/* Test whether system call was invoked from supervisor (use MSP) or
+	 * user (use PSP) mode */
 	asm volatile (
 	"tst lr, #4" "\n\t"
 	"ite eq" "\n\t"
-	"mrseq r0, msp" "\n\t"
-	"mrsne r0, psp" "\n\t"
-	"ldr r0, [r0, #24]" "\n\t"
-	"ldrb %0, [r0, #-2]" : "=r" (svc_nr) );
+	"mrseq %0, msp" "\n\t"
+	"mrsne %0, psp" : "=r" (current_sp));
+
+	/* An exception (or interrupt) before entering this handler
+	 * places the following on the stack 
+	 * 
+	 * R0
+	 * R1
+	 * R2
+	 * R3
+	 * R12
+	 * LR
+	 * PC <- placed at current_sp[6]
+	 * PSR 
+	 *
+	 * PC contains the return address that will continue after this SVC handler
+	 * is finised. The previous address (the svc # call) is at PC - 2, the
+	 * first byte contains the svc number.
+	 * */
+
+	uint8_t svc_nr = ((char *) current_sp[6])[-2];
 
 	printf("SYSTEM CALL NR: %d", svc_nr);
 
-	for(;;);
-
- 	volatile uint32_t * sp;
-	
-	asm volatile (
-	"tst lr, #4" "\n\t" 
-	"ite eq" "\n\t"
-	"mrseq %0, msp" "\n\t" 
-	"mrsne r0, psp" : "=r" (sp) );
-
-
-	for (int i = 0; (sp + i) < 0x20010000; i++) {
-		printf("ADDRESS: %p, VALUE: %x\n", (sp + i), *(sp + i));
-	}
-
-	for (;;);	
-	//asm ("mov %0, pc" : "=r" (link_register));
-	//printf("%x\n", link_register);
-	
-	volatile uint32_t * svc_number = (uint32_t *) 0x20022222;
-	*svc_number = sp[-6];
-	//       	= sp[6];
-	//uint8_t tmp  = link_register[-2];
-	printf("SVC nr: %x", *svc_number);
-	//printf("%d, %d, %d, %d, %d, %d\n", msp[6], msp[0], msp[1], msp[2], msp[3], msp[4]);
-	
 	for (;;);
-	//return NULL;	
-	return 0;
 
 }
 
@@ -104,13 +98,8 @@ void syscall(unsigned int * args) {
 
 void syscall_init() {
 
-
 	/* SVC is located at position 11 in the interrupt vector table  */
-//	extern void * _syscall;
-	extern void * hardfault;
-
-	ivt_set_gate(11, __svc_handler__, 0);
-
+	ivt_set_gate(11, _svc_handler, 0);
 
 }
 

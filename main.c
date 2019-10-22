@@ -34,37 +34,6 @@
 
 #include <lib/syscall.h>
 
-int test3(int i, int j) {
-
- 	volatile uint32_t * sp = get_msp();
-	
-	/* asm volatile (
-	"tst lr, #4" "\n\t" 
-	"ite eq" "\n\t"
-	"mrseq %0, msp" "\n\t" 
-	"mrsne r0, psp" : "=r" (sp) ); */
-
-	for (int i = 0; (sp + i) < 0x20010000; i++) {
-		printf("ADDRESS: %p, VALUE: %x\n", (sp + i), *(sp + i));
-	}
-
-	for(;;);
-	return 0xCC;
-
-}
-int test2(int i, int j) {
-
-	int x = i * j;
-	test3(0x3A, 0x3B); 
-	
-
-}
-int test(int i, int j) {
-
-	test2(0x2A, 0x2B);
-	
-	return 0xAA;
-}
 
 void main()
 {

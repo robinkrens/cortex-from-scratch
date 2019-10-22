@@ -34,9 +34,8 @@
 
 /* 
  * These values are pushed on the stack just before
- * entering the ISR. Normally, this would require
- * assembly or inline assembly code. I use a so-called
- * 'naked function' __attribute__ ((interrupt)) which
+ * entering the ISR. I use a so-called
+ * 'naked function' __attribute__ ((naked)) which
  * gives me a little bit more control over the caller
  *
  * The following register are pushed to the stack
@@ -53,7 +52,7 @@ struct interrupt_frame {
 	uint32_t lr;
 	uint32_t pc;
 	uint32_t psr; // N-4
-};
+} frame;
 
 /* 
  * Vector table, each entry contains an interrupt
@@ -64,7 +63,7 @@ struct interrupt_frame {
  * */
 uint32_t __attribute__((aligned(0x100))) ivt[92];
 
-/* Each message corresponds to each and every exception. */
+/* Each message corresponds to an exception in the vector table. */
 char * exception_message(uint8_t intnr) {
 
 char * messages[] = {
@@ -98,70 +97,47 @@ if (intnr < 20) // TODO: strlen
 	return messages[intnr];
 
 return "UNKNOWN";
+
 }
 
+/* Function to set entries of the interrupt vector table 
+ * */
 void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 
 	ivt[num] = (uint32_t) isr;
-//	if (num <= 32)
-//		*NVIC_ISER0 = (1 << ((uint32_t)(num) & 0x1F));
+	//if (num <= 32)
+	//*NVIC_ISER0 = (1 << ((uint32_t)(num) & 0x1F));
 	/* TODO: Priorities */
 }
 
 
-/* Dummy interrupt: comment out the comment to use a naked
- * function */
+/* Dummy interrupt: shows the saved stack registers and then
+ * halts */
+__attribute__ ((naked)) void * dummy_isr(void) {
 
-struct interrupt_frame * frame;
+	uint32_t * current_sp;
 
-//__attribute__ ((interrupt)) 
-void * dummy_isr( struct interrupt_frame * f ) {
+	/* Test whether system call was invoked from supervisor (use MSP) or
+	 * user (use PSP) mode */
+	asm volatile (
+	"tst lr, #4" "\n\t"
+	"ite eq" "\n\t"
+	"mrseq %0, msp" "\n\t"
+	"mrsne %0, psp" : "=r" (current_sp));
 
-	//uint32_t link_register = 0;
-	//asm ("mov %0, #33" : "=r" (lp));
-	
-	/* Check Link Register:
-	 * If you ever need to debug these: here are the most common
-	 * values
-	 * 0xFFFFFFF1: return to handler mode (nested interrupts
-	 * 0xFFFFFFF9: return to thread mode using main stack
-	 * 0xFFFFFFFD: return to thread mode using process stack */
-	// asm ("mov %0, lr" : "=r" (link_register));
-	// printf("%x\n", link_register);
-	// for(;;);
-
-//	asm volatile ("push {r0-r12}");	
-//	int * stack;
-//	asm volatile ("tst lr, #4" "\n\t" 
-//	"ite eq" "\n\t"
-//	"mrseq %0, msp" "\n\t" 
-//	"mrsne r0, psp" : "=r" (stack));
-//	
-//	printf("STACK:  %x, %x,  %x, %x, %x", stack[32], stack[28], stack[24], stack[20], stack[16]);
-
-//	asm volatile ("CPSID f");
-
-//	uint32_t tmp = args[0];
-//	uint32_t tmp2 = args[1];
-//	printf("%x, %x\n", tmp, tmp2); 
-//	uint32_t tmp3 = args[2];
-//	uint32_t tmp4 = args[3];
-//	printf("%x, %x\n", tmp3, tmp4); 
-
- 	struct interrupt_frame * frame = (struct interrupt_frame * )kalloc(get_kheap());
-	memcpy(frame, f, sizeof(struct interrupt_frame));
+	memcpy(&frame, current_sp, sizeof(struct interrupt_frame));
 
 	uint8_t nr = *SCB_VTOR_ST & 0xFF;
 	printf("EXCEPTION: %s\n", exception_message(nr));
-	printf("STACK TRACE:\n");
-	printf("R0:%p\n",frame->r0);
-	printf("R1:%p\n",frame->r1);
-	printf("R2:%p\n",frame->r2);
-	printf("R3:%p\n",frame->r3);
-	printf("R12:%p\n",frame->r12);
-	printf("LR:%p\n",frame->lr);
-	printf("PC:%p\n",frame->pc);
-	printf("PSR:%p\n",frame->psr);
+	printf("STACKFRAME:\n");
+	printf("R0:%p\n",frame.r0);
+	printf("R1:%p\n",frame.r1);
+	printf("R2:%p\n",frame.r2);
+	printf("R3:%p\n",frame.r3);
+	printf("R12:%p\n",frame.r12);
+	printf("LR:%p\n",frame.lr);
+	printf("PC:%p\n",frame.pc);
+	printf("PSR:%p\n",frame.psr);
 	
 	for(;;); 
 }

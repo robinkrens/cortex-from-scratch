@@ -76,6 +76,9 @@ char * messages[] = {
     "BUS FAULT",
     "USAGE FAULT",
     "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
     "SVC",
     "DEBUG MONITOR",
     "RESERVED",
@@ -109,8 +112,44 @@ void ivt_set_gate(unsigned char num, void * isr(), short pri) {
 /* Dummy interrupt: comment out the comment to use a naked
  * function */
 
-__attribute__ ((interrupt)) 
-void * dummy_isr( struct interrupt_frame * frame ) {
+struct interrupt_frame * frame;
+
+//__attribute__ ((interrupt)) 
+void * dummy_isr( struct interrupt_frame * f ) {
+
+	//uint32_t link_register = 0;
+	//asm ("mov %0, #33" : "=r" (lp));
+	
+	/* Check Link Register:
+	 * If you ever need to debug these: here are the most common
+	 * values
+	 * 0xFFFFFFF1: return to handler mode (nested interrupts
+	 * 0xFFFFFFF9: return to thread mode using main stack
+	 * 0xFFFFFFFD: return to thread mode using process stack */
+	// asm ("mov %0, lr" : "=r" (link_register));
+	// printf("%x\n", link_register);
+	// for(;;);
+
+//	asm volatile ("push {r0-r12}");	
+//	int * stack;
+//	asm volatile ("tst lr, #4" "\n\t" 
+//	"ite eq" "\n\t"
+//	"mrseq %0, msp" "\n\t" 
+//	"mrsne r0, psp" : "=r" (stack));
+//	
+//	printf("STACK:  %x, %x,  %x, %x, %x", stack[32], stack[28], stack[24], stack[20], stack[16]);
+
+//	asm volatile ("CPSID f");
+
+//	uint32_t tmp = args[0];
+//	uint32_t tmp2 = args[1];
+//	printf("%x, %x\n", tmp, tmp2); 
+//	uint32_t tmp3 = args[2];
+//	uint32_t tmp4 = args[3];
+//	printf("%x, %x\n", tmp3, tmp4); 
+
+ 	struct interrupt_frame * frame = (struct interrupt_frame * )kalloc(get_kheap());
+	memcpy(frame, f, sizeof(struct interrupt_frame));
 
 	uint8_t nr = *SCB_VTOR_ST & 0xFF;
 	printf("EXCEPTION: %s\n", exception_message(nr));
@@ -124,7 +163,7 @@ void * dummy_isr( struct interrupt_frame * frame ) {
 	printf("PC:%p\n",frame->pc);
 	printf("PSR:%p\n",frame->psr);
 	
-	for(;;);
+	for(;;); 
 }
 
 /* Initialize interrupt vector  */

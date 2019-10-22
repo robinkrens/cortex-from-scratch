@@ -37,6 +37,9 @@ extern void * kalloc(void * s);
 extern void kfree(void * s, void * p);
 extern void kheap_info(void * s);
 
+/* SYSCALL.C */
+extern void syscall_init();
+
 /* TERM.C */
 extern void terminal();
 

@@ -13,6 +13,7 @@
 	.text
 	.global _start
 	.global reset, nmi, hardfault
+	.global _svc_handler
 	.code 16
 	.syntax unified
 _start:
@@ -28,14 +29,17 @@ reset:
 /* These are consequently the nmi and hardfault vector handlers
    before booting and entering main, these can actually be called
    (machine somehow has a failure). That's why they are included here.
-   Later the interrupt vector
-   will be relocated to SRAM and the will be copied / modified.  */
+   Later the interrupt vector will be relocated to SRAM and modified.  */
 
 nmi:
 	b nmi
 
-hardfault: 
-	b hardfault
-	
+hardfault:
+	mov r5, 9
+	b hardfault2
+
+hardfault2:
+	b hardfault2
+
 	.end
 

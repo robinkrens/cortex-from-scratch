@@ -127,7 +127,7 @@ __attribute__ ((naked)) void * dummy_isr(void) {
 
 	memcpy(&frame, current_sp, sizeof(struct interrupt_frame));
 
-	uint8_t nr = *SCB_VTOR_ST & 0xFF;
+	uint8_t nr = *SCB_ICSR & 0xFF;
 	printf("EXCEPTION: %s\n", exception_message(nr));
 	printf("STACKFRAME:\n");
 	printf("R0:%p\n",frame.r0);
@@ -136,9 +136,11 @@ __attribute__ ((naked)) void * dummy_isr(void) {
 	printf("R3:%p\n",frame.r3);
 	printf("R12:%p\n",frame.r12);
 	printf("LR:%p\n",frame.lr);
-	printf("PC:%p\n",frame.pc);
+	printf("PC:%p (<-- last function call)\n",frame.pc);
 	printf("PSR:%p\n",frame.psr);
 	
+	printf("CPU STATUS:");
+	printf("%x\n", *SCB_CFSR);
 	for(;;); 
 }
 
@@ -154,10 +156,23 @@ void ivt_init() {
 	*  */
 	extern void * reset,  * nmi, * hardfault;
 
-	// set dummy handlers 
+	/* set dummy handlers */
 	for (int i = 1; i <= 64 ; i++) {
 		ivt_set_gate(i, dummy_isr, 0);
 	}
+
+
+	/* Enable memory management, bus and usage fault exceptions handlers
+	 * If these are not enabled, the processor treats them as a hard
+	 * faults. Unpriviliged access will cause a busfault in case no MPU */
+	rsetbit(SCB_SHCSR, 16); // MPU violation
+	rsetbit(SCB_SHCSR, 17); // Bus faults
+	rsetbit(SCB_SHCSR, 18); // Usage faults
+	
+	/* Enable various other faults */
+	// rsetbit(SCB_CCR, 4); // division by zero, (needed if you write a lot
+	// of assembly, otherwise the compiler probably leave these divisions out
+
 
 	/* The vector table is intially at 0x0. The vector table can be
 	 * relocated to other memory locations. We can do this by setting 

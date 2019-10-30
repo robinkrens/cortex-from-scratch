@@ -2,6 +2,17 @@
 #define __SYSTEM_H
 
 
+/* Return CONSTANTS */
+
+#define OK 1
+#define MMKAY 0
+#define NOTOK -1
+
+/* RETURN TYPES */
+
+typedef int32_t SYSCALL;
+typedef int32_t PROCESS;
+
 /* CLOCK.C 
  * Board specific clock settings. These boards often come with two 
  * external oscillators: one high speed (8MHz) and one low speed (~30kHz).

@@ -13,7 +13,7 @@
 	.text
 	.global _start
 	.global reset, nmi, hardfault
-	.global _svc_handler
+	.global pendsv_handler
 	.code 16
 	.syntax unified
 _start:
@@ -30,6 +30,7 @@ reset:
    before booting and entering main, these can actually be called
    (machine somehow has a failure). That's why they are included here.
    Later the interrupt vector will be relocated to SRAM and modified.  */
+
 
 nmi:
 	b nmi

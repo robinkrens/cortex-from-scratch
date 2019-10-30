@@ -54,7 +54,7 @@ kernel: $(OBJ) $(DRIVERS) $(LIBS)
 	$(LD) -nostartfiles -Map $(BIN)/$@.MAP -T link.ld -o $(BIN)/$@.ELF start.o $^ --print-memory-usage
 	@echo "Creating binary..."
 	@mkdir -p $(BIN)
-	$(MKIMG) -Obinary -R .data $(BIN)/$@.ELF  $(BIN)/$@.bin
+	$(MKIMG) -Obinary $(BIN)/$@.ELF  $(BIN)/$@.bin
 
 # Run in Qemu; note this is a patched version for stm32-f103c8
 run:

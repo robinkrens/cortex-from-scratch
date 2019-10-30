@@ -38,13 +38,16 @@ SECTIONS
 	{
 		/* (.vector_table */
 		*(.text)
-		*(.rodata)
+		*(.rodata) 
+		data_lma = .;
 	}
         . = 0x20000000;	
-	.data :  
+	data_vma = .;
+	.data : AT (data_lma)
 	{
 		*(.data)
 	} 
+	data_end = .;
 	.bss : ALIGN(4) 
 	{
 		*(.bss)

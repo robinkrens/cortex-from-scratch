@@ -23,6 +23,7 @@
 #include <lib/stdio.h>
 #include <lib/string.h>
 #include <lib/tinyprintf.h>
+#include <lib/syscall.h>
 
 #include <drivers/uart.h>
 #include <drivers/led.h>
@@ -32,52 +33,18 @@
 //#include <drivers/mk450_joystick.h>
 #include <drivers/st7735s.h>
 
-#include <lib/syscall.h>
 
-
+/* Example of multitasking */
 process_t p1;
 process_t p2;
 
 uint32_t stackp1[500];
 uint32_t stackp2[500];
 
-extern int count;
+void process1(void);
+void process2(void);
 
-void switch_usermode() {
 
-	// user mode 
-	//asm volatile ("mov r0, 0x1" "\n\t" 
-	//"msr control, r0" "\n\t"
-	//"isb" "\n\t"); 
-
-	// system init call
-
-}
-
-void process1(void) {
-	
-	while(1) {
-		//uint32_t control = 0xFFFFFFFF;
-		printf("process 1\n");
-		//asm volatile("msr control, %0" "\n\t"
-		//	       "dsb" : : "r" (control));
-		//printf("control: %x", control);	
-		//for(;;);
-		_block(100);
-		theos_switch(&p1, &p2);
-	}
-
-}
-void process2(void) {
-	while(1) {
-		printf("process 2\n");
-		_block(100);
-		theos_switch(&p2, &p1);
-	}
-	
-}
-
-int test_data_segment = 99;
 
 void main()
 {
@@ -116,38 +83,26 @@ void main()
 	/* Real time clock */
 	rtc_init();
 
-
-//	printf("press any key to start\n");
-//	asm volatile ("cpsid f"); // doesn't work in qemu
-
+	/* Initialize SVC handler for system calls*/
 	syscall_init();
 
-	//int ret;
-	//ret = theos_test(0x1, 0x2, 0x3);
-	//ret = theos_uptime();
+	/* System call test */
+	int uptime = theos_uptime();
+	printf("UPTIME: %d\n", uptime);
 
-	//printf("ret: %d\n", ret);
-
-	int size_stack = sizeof(stackp1);
-	
-	p1.stackptr = ((unsigned int) stackp1) + size_stack - 0x1C;
-	p1.stackptr[6] = (uint32_t) process1;
-	p1.stackptr[7] = 0x01000000;
-	p2.stackptr = ((unsigned int) stackp2) + size_stack - 0x1C;
-	p2.stackptr[6] = (uint32_t) process2;
-	p2.stackptr[7] = 0x01000000;
-	
-	theos_init(&p1);
+	/* Multi processes test */
+//	int size_stack = sizeof(stackp1);
+//	p1.stackptr = ((unsigned int) stackp1) + size_stack - 0x1C;
+//	p1.stackptr[6] = (uint32_t) process1;
+//	p1.stackptr[7] = 0x01000000;
+//	p2.stackptr = ((unsigned int) stackp2) + size_stack - 0x1C;
+//	p2.stackptr[6] = (uint32_t) process2;
+//	p2.stackptr[7] = 0x01000000;
+//	theos_init(&p1);
 
 	/* Cortex M* integrated systick, can be replaced
 	 * by the more accurate RTC. */
-	
-//	systick_init();
-
-	//	switch_usermode();	
-
-	//printf("without system call");	
-//	theos_test(0xA1, 0xA2);
+	//systick_init();
 
 	/* Eeprom Driver
 	eeprom_at24c_init();
@@ -169,7 +124,6 @@ void main()
 	/* ADC Joystick module */
 	// mk450_init();	
 
-
 	/* Start up terminal */
 	terminal();
 	
@@ -177,4 +131,22 @@ void main()
 	for(;;) {
 
  	}
+}
+
+void process1(void) {
+	
+	while(1) {
+		printf("process 1\n");
+		_block(0xFFFFF);
+		theos_switch(&p1, &p2);
+	}
+
+}
+void process2(void) {
+	while(1) {
+		printf("process 2\n");
+		_block(0xFFFFF);
+		theos_switch(&p2, &p1);
+	}
+	
 }

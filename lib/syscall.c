@@ -5,7 +5,7 @@
  * Initial version 
  * 
  * $DESCRIPTION$
- * System calls for user functions
+ * System calls for various user functions
  *
  */
 
@@ -18,11 +18,11 @@
 /* Arguments are placed in r0, r1, r2 by convention
  * And "parsed" to the the kernel
  * Right after the svc call, r0 contains status
- * of call (ie. OK, NOTOK */
+ * of call (ie. OK, SYSERR) */
 
 int theos_uptime() {
 
-	asm volatile("svc 6");
+	asm volatile("svc 7");
 	int ret;
 	asm volatile("mov %0, r0" : "=r" (ret));	
 	return ret;

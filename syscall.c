@@ -10,13 +10,14 @@
  * | SYSTEM CALL 	| #	|
  * |--------------------|-------|
  * | THEOS_INIT		| 1	|
- * | THEOS_DESTROY	| 2	|
- * | THEOS_RESCHED	| 3	|
- * | THEOS_GETC		| 4	|
- * | THEOS_CPUTS	| 5	|
- * | THEOS_UPTIME	| 6	|
- * | THEOS_OMNIGOD	| 7	|
- * | THEOS_TIME		| 8	|
+ * | THEOS_CREATE	| 2	|
+ * | THEOS_DESTROY	| 3	|
+ * | THEOS_SWITCH	| 4	|
+ * | THEOS_GETC		| 5	|
+ * | THEOS_CPUTS	| 6	|
+ * | THEOS_UPTIME	| 7	|
+ * | THEOS_OMNIGOD	| 8	|
+ * | THEOS_TIME		| 9	|
  * | THEOS_MAGIC	| 99	|
  * |----------------------------|
  *
@@ -70,10 +71,9 @@ int sys_switch(process_t * currp, process_t * newp) {
 	uint32_t chk_stackptr;
 	asm volatile("mrs %0, psp" : "=r" (chk_stackptr));
 	//asm volatile("isb");
-	printf("OLD: %x\n", currp->stackptr);
-	printf("NEW: %x\n", newp->stackptr);
-	printf("CHK: %x\n", chk_stackptr);
-	//for(;;);
+	//printf("OLD: %x\n", currp->stackptr);
+	//printf("NEW: %x\n", newp->stackptr);
+	//printf("CHK: %x\n", chk_stackptr);
 
 	return 0;
 

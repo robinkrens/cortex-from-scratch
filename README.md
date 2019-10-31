@@ -29,14 +29,17 @@ port this code to any Cortex M0/M3/M4/M7 board.
 	* Temperature sensor: drivers/tsensor.c [COMPLETED]
 	* OLED display [PLANNED]
 	* Joystick: drivers/mk450_joystick.c [COMPLETED]
-	* TFT Screen: drivers/st7735s.c, include/libs/fonts/wogfont.h [IN PROGRESS]
+	* TFT Screen: drivers/st7735s.c, include/libs/fonts/wogfont.h [COMPLETED]
 * Memory Management [IN PROGRESS] -- FILE: lib/pool.c
-* User Mode [PLANNED]
-* System Call PendV implementation [PLANNED]
+* Kernel heap [COMPLETED] -- FILE: heap.c
+* User Mode Switch [IN PROGRESS]
+* System Calls [IN PROGRESS] -- FILE: syscall.c lib/syscall.c
+* Scheduler based on PendSV system call [IN PROGRESS]   
 * Stack trace debug [IN PROGRESS]
-* Memory Protection Unit [PLANNED]
+* Memory Protection Unit [SUSPENDED] (STM32F103 board has no MPU)
 * Loadable programs from EEPROM [PLANNED]
-* Multiple processes and scheduling [PLANNED]
+* Multiple processes [IN PROGRESS] -- FILES: process.h, main.c 
+* Driver "abstraction" [PLANNED] 
 
 ## SCREENSHOTS
 Here are some screenshots that shows the terminal just after booting:
